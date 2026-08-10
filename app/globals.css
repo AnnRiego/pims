@@ -1,26 +1,194 @@
+
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ========================================
+   PIMS - Global Styles
+   Property Inventory and Management System
+   ======================================== */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+   :root {
+    --background: #090909;
+    --foreground: #ffffff;
+  
+    --surface: #0d0d0d;
+    --surface-light: #111111;
+    --surface-hover: #161616;
+  
+    --border: rgba(255, 255, 255, 0.1);
+  
+    --primary: #df1b1b;
+    --primary-light: #ef3333;
+    --primary-bright: #ff4a4a;
+  
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-muted: #6b7280;
+  
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #df1b1b;
   }
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
+  margin: 0;
+  min-height: 100vh;
+
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================
+   Scrollbar
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #292929;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* ========================================
+   Selection
+   ======================================== */
+
+::selection {
+  background: var(--primary);
+  color: white;
+}
+
+/* ========================================
+   Form Elements
+   ======================================== */
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #52525b;
+}
+
+/* ========================================
+   Links
+   ======================================== */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ========================================
+   Focus
+   ======================================== */
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.pims-surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.pims-surface-light {
+  background: var(--surface-light);
+  border: 1px solid var(--border);
+}
+
+.pims-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.pims-primary:hover {
+  background: var(--primary-light);
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.25s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* ========================================
+   Mobile
+   ======================================== */
+
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
 }

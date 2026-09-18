@@ -1,11 +1,8 @@
-
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { usePathname, useRouter } from "next/navigation";
-
-
 import {
   LayoutDashboard,
   Package,
@@ -34,18 +31,18 @@ import {
 } from "lucide-react";
 
 // =====================================================
-// STORAGE KEYS
+// STORAGE KEY
 // =====================================================
 
-const MOVEMENTS_STORAGE_KEY = "pimsCheckInMovements";
+const MOVEMENTS_STORAGE_KEY = "pimsCheckOutMovements";
 
 // =====================================================
-// DEFAULT MOVEMENT DATA
+// DEFAULT CHECK-OUT DATA
 // =====================================================
 
 const defaultMovements = [
   {
-    id: "CI-00001",
+    id: "CO-00001",
     propertyId: "PIMS-00002",
     propertyName: "MacBook Pro 16-inch",
     category: "Computer / Laptop",
@@ -53,14 +50,13 @@ const defaultMovements = [
     purpose: "Field Activity",
     dateOut: "2026-08-08",
     timeOut: "08:30",
-    dateReturned: "2026-08-08",
-    timeReturned: "17:15",
+    expectedReturn: "2026-08-08",
+    status: "On Loan",
     condition: "Good",
-    remarks: "Returned complete and operational.",
-    status: "Returned",
+    remarks: "For field documentation.",
   },
   {
-    id: "CI-00002",
+    id: "CO-00002",
     propertyId: "PIMS-00004",
     propertyName: "Allen & Heath Mixer",
     category: "Audio Equipment",
@@ -68,11 +64,10 @@ const defaultMovements = [
     purpose: "Event Production",
     dateOut: "2026-08-07",
     timeOut: "09:00",
-    dateReturned: "2026-08-07",
-    timeReturned: "19:30",
-    condition: "Good",
-    remarks: "No issues reported.",
+    expectedReturn: "2026-08-07",
     status: "Returned",
+    condition: "Good",
+    remarks: "Returned after event production.",
   },
 ];
 
@@ -122,7 +117,7 @@ const menuItems = [
 // MAIN PAGE
 // =====================================================
 
-export default function CheckInPage() {
+export default function CheckOutPage() {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -139,11 +134,8 @@ export default function CheckInPage() {
   // ===================================================
 
   const [movements, setMovements] = useState([]);
-
   const [searchTerm, setSearchTerm] = useState("");
-
-  const [conditionFilter, setConditionFilter] =
-    useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   // ===================================================
   // MODAL STATE
@@ -152,11 +144,8 @@ export default function CheckInPage() {
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
 
-  const [editingMovement, setEditingMovement] =
-    useState(null);
-
-  const [selectedMovement, setSelectedMovement] =
-    useState(null);
+  const [editingMovement, setEditingMovement] = useState(null);
+  const [selectedMovement, setSelectedMovement] = useState(null);
 
   // ===================================================
   // FORM
@@ -170,14 +159,13 @@ export default function CheckInPage() {
     purpose: "",
     dateOut: "",
     timeOut: "",
-    dateReturned: "",
-    timeReturned: "",
+    expectedReturn: "",
     condition: "Good",
     remarks: "",
+    status: "On Loan",
   };
 
   const [form, setForm] = useState(emptyForm);
-
   const [formError, setFormError] = useState("");
 
   // ===================================================
@@ -200,12 +188,8 @@ export default function CheckInPage() {
       try {
         setUser(JSON.parse(storedUser));
       } catch {
-        sessionStorage.removeItem(
-          "pimsAuthenticated"
-        );
-
+        sessionStorage.removeItem("pimsAuthenticated");
         sessionStorage.removeItem("pimsUser");
-
         router.replace("/");
       }
     }
@@ -216,10 +200,9 @@ export default function CheckInPage() {
   // ===================================================
 
   useEffect(() => {
-    const stored =
-      localStorage.getItem(
-        MOVEMENTS_STORAGE_KEY
-      );
+    const stored = localStorage.getItem(
+      MOVEMENTS_STORAGE_KEY
+    );
 
     if (stored) {
       try {
@@ -255,10 +238,7 @@ export default function CheckInPage() {
   // ===================================================
 
   function handleLogout() {
-    sessionStorage.removeItem(
-      "pimsAuthenticated"
-    );
-
+    sessionStorage.removeItem("pimsAuthenticated");
     sessionStorage.removeItem("pimsUser");
 
     router.replace("/");
@@ -275,7 +255,7 @@ export default function CheckInPage() {
   }
 
   // ===================================================
-  // OPEN ADD / RECORD MODAL
+  // OPEN ADD MODAL
   // ===================================================
 
   function openAddModal() {
@@ -292,15 +272,16 @@ export default function CheckInPage() {
 
     setForm({
       ...emptyForm,
-      dateReturned: today,
-      timeReturned: currentTime,
+      dateOut: today,
+      timeOut: currentTime,
+      status: "On Loan",
     });
 
     setShowModal(true);
   }
 
   // ===================================================
-  // OPEN EDIT
+  // OPEN EDIT MODAL
   // ===================================================
 
   function openEditModal(movement) {
@@ -315,17 +296,17 @@ export default function CheckInPage() {
       purpose: movement.purpose,
       dateOut: movement.dateOut,
       timeOut: movement.timeOut,
-      dateReturned: movement.dateReturned,
-      timeReturned: movement.timeReturned,
+      expectedReturn: movement.expectedReturn,
       condition: movement.condition,
       remarks: movement.remarks,
+      status: movement.status,
     });
 
     setShowModal(true);
   }
 
   // ===================================================
-  // OPEN VIEW
+  // OPEN VIEW MODAL
   // ===================================================
 
   function openViewModal(movement) {
@@ -345,7 +326,7 @@ export default function CheckInPage() {
   }
 
   // ===================================================
-  // SUBMIT MOVEMENT
+  // SUBMIT
   // ===================================================
 
   function handleSubmit(e) {
@@ -358,9 +339,7 @@ export default function CheckInPage() {
       !form.propertyName ||
       !form.employee ||
       !form.dateOut ||
-      !form.timeOut ||
-      !form.dateReturned ||
-      !form.timeReturned
+      !form.timeOut
     ) {
       setFormError(
         "Please complete all required fields."
@@ -370,19 +349,19 @@ export default function CheckInPage() {
     }
 
     if (
-      `${form.dateReturned}T${form.timeReturned}` <
-      `${form.dateOut}T${form.timeOut}`
+      form.expectedReturn &&
+      form.expectedReturn < form.dateOut
     ) {
       setFormError(
-        "Return date and time cannot be earlier than the date and time out."
+        "Expected return date cannot be earlier than the date out."
       );
 
       return;
     }
 
-    // ===============================================
+    // =================================================
     // EDIT
-    // ===============================================
+    // =================================================
 
     if (editingMovement) {
       setMovements((current) =>
@@ -391,7 +370,6 @@ export default function CheckInPage() {
             ? {
                 ...item,
                 ...form,
-                status: "Returned",
               }
             : item
         )
@@ -399,23 +377,23 @@ export default function CheckInPage() {
 
       setShowModal(false);
       setEditingMovement(null);
+      setForm(emptyForm);
 
       return;
     }
 
-    // ===============================================
+    // =================================================
     // CREATE
-    // ===============================================
+    // =================================================
 
     const newId =
-      `CI-${String(
+      `CO-${String(
         movements.length + 1
       ).padStart(5, "0")}`;
 
     const newMovement = {
       id: newId,
       ...form,
-      status: "Returned",
     };
 
     setMovements((current) => [
@@ -428,23 +406,48 @@ export default function CheckInPage() {
   }
 
   // ===================================================
-  // DELETE MOVEMENT
+  // DELETE
   // ===================================================
 
   function handleDelete(id) {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this movement record?"
+      "Are you sure you want to delete this check-out record?"
     );
 
     if (!confirmed) return;
 
     setMovements((current) =>
-      current.filter((item) => item.id !== id)
+      current.filter(
+        (item) => item.id !== id
+      )
     );
   }
 
   // ===================================================
-  // FILTERED RECORDS
+  // MARK AS RETURNED
+  // ===================================================
+
+  function handleMarkReturned(movement) {
+    const confirmed = window.confirm(
+      `Mark ${movement.propertyName} as returned?`
+    );
+
+    if (!confirmed) return;
+
+    setMovements((current) =>
+      current.map((item) =>
+        item.id === movement.id
+          ? {
+              ...item,
+              status: "Returned",
+            }
+          : item
+      )
+    );
+  }
+
+  // ===================================================
+  // FILTER
   // ===================================================
 
   const filteredMovements = useMemo(() => {
@@ -453,7 +456,9 @@ export default function CheckInPage() {
         searchTerm.toLowerCase();
 
       const matchesSearch =
-        item.id.toLowerCase().includes(search) ||
+        item.id
+          .toLowerCase()
+          .includes(search) ||
         item.propertyId
           .toLowerCase()
           .includes(search) ||
@@ -467,38 +472,43 @@ export default function CheckInPage() {
           .toLowerCase()
           .includes(search);
 
-      const matchesCondition =
-        conditionFilter === "All" ||
-        item.condition === conditionFilter;
+      const matchesStatus =
+        statusFilter === "All" ||
+        item.status === statusFilter;
 
       return (
         matchesSearch &&
-        matchesCondition
+        matchesStatus
       );
     });
   }, [
     movements,
     searchTerm,
-    conditionFilter,
+    statusFilter,
   ]);
 
   // ===================================================
   // STATISTICS
   // ===================================================
 
-  const totalReturned = movements.length;
+  const totalCheckedOut =
+    movements.length;
 
-  const goodCondition = movements.filter(
-    (item) => item.condition === "Good"
-  ).length;
+  const currentlyOut =
+    movements.filter(
+      (item) => item.status === "On Loan"
+    ).length;
 
-  const needsAttention = movements.filter(
-    (item) =>
-      item.condition === "Minor Damage" ||
-      item.condition === "Needs Repair" ||
-      item.condition === "Damaged" ||
-      item.condition === "Missing Parts"
-  ).length;
+  const returned =
+    movements.filter(
+      (item) => item.status === "Returned"
+    ).length;
+
+  const needsAttention =
+    movements.filter(
+      (item) =>
+        item.condition !== "Good"
+    ).length;
 
   // ===================================================
   // LOADING
@@ -509,6 +519,7 @@ export default function CheckInPage() {
       <div className="flex min-h-screen items-center justify-center bg-[#090909] text-gray-500">
         <div className="text-center">
           <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-[#a70000] border-t-transparent" />
+
           <p className="text-xs">
             Loading PIMS...
           </p>
@@ -523,6 +534,7 @@ export default function CheckInPage() {
 
   return (
     <main className="min-h-screen bg-[#090909] text-white">
+
       {/* BACKGROUND */}
 
       <div
@@ -553,14 +565,16 @@ export default function CheckInPage() {
       ================================================= */}
 
       
-        <Sidebar
-         sidebarOpen={sidebarOpen}
-         setSidebarOpen={setSidebarOpen}
-        />
+          <Sidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          />
         {/* LOGO */}
 
         <div className="flex h-20 items-center justify-between border-b border-white/[0.06] px-5">
+
           <div className="flex items-center gap-3">
+
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#a70000] shadow-[0_0_30px_rgba(167,0,0,0.25)]">
               <Package size={20} />
             </div>
@@ -574,6 +588,7 @@ export default function CheckInPage() {
                 Property Management
               </p>
             </div>
+
           </div>
 
           <button
@@ -584,16 +599,19 @@ export default function CheckInPage() {
           >
             <X size={20} />
           </button>
+
         </div>
 
         {/* MENU */}
 
         <nav className="flex-1 overflow-y-auto p-4">
+
           <p className="mb-3 px-3 text-[8px] uppercase tracking-[0.2em] text-gray-700">
             Main Menu
           </p>
 
           <div className="space-y-1">
+
             {menuItems.map((item) => {
               const Icon = item.icon;
 
@@ -612,6 +630,7 @@ export default function CheckInPage() {
                       : "border border-transparent text-gray-600 hover:border-[#a70000]/20 hover:bg-[#a70000]/[0.04] hover:text-gray-300"
                   }`}
                 >
+
                   <Icon
                     size={17}
                     className={`transition-all duration-300 ${
@@ -628,21 +647,26 @@ export default function CheckInPage() {
                   {isActive && (
                     <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#a70000] shadow-[0_0_8px_#a70000]" />
                   )}
+
                 </button>
               );
             })}
+
           </div>
         </nav>
 
         {/* USER */}
 
         <div className="border-t border-white/[0.06] p-4">
+
           <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.025] p-3">
+
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#a70000]/10 text-[#a70000]">
               <UserCircle size={20} />
             </div>
 
             <div className="min-w-0">
+
               <p className="truncate text-[10px] font-semibold text-gray-300">
                 {user.name}
               </p>
@@ -650,7 +674,9 @@ export default function CheckInPage() {
               <p className="truncate text-[8px] text-gray-600">
                 {user.role}
               </p>
+
             </div>
+
           </div>
 
           <button
@@ -663,7 +689,9 @@ export default function CheckInPage() {
               Logout
             </span>
           </button>
+
         </div>
+
 
       {/* =================================================
           MAIN
@@ -671,14 +699,16 @@ export default function CheckInPage() {
 
       <section className="relative z-10 min-h-screen lg:ml-64">
 
-      {/* =====================================================
+     {/* =====================================================
             TOP BAR
         ===================================================== */}
 
+
         <header className="fixed left-0 right-0 top-0 z-30 flex h-18 items-center justify-between border-b
          border-white/[0.06] bg-[#090909]/80 px-5 backdrop-blur-2xl sm:px-7 lg:left-64">
-
+          
           <div className="flex items-center gap-4">
+
             <button
               onClick={() =>
                 setSidebarOpen(true)
@@ -689,18 +719,23 @@ export default function CheckInPage() {
             </button>
 
             <div>
+
               <p className="text-[8px] uppercase tracking-[0.2em] text-gray-700">
                 Property Inventory & Management
               </p>
 
               <h2 className="mt-1 text-lg font-semibold">
-                Property Check-In
+                Property Check-Out
               </h2>
+
             </div>
+
           </div>
 
           <div className="flex items-center gap-3">
+
             <div className="hidden items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 sm:flex">
+
               <Search
                 size={14}
                 className="text-gray-700"
@@ -717,9 +752,11 @@ export default function CheckInPage() {
                 }
                 className="w-28 bg-transparent text-[10px] text-gray-300 outline-none placeholder:text-gray-700"
               />
+
             </div>
 
             <div className="relative">
+
               <button
                 onClick={() =>
                   setNotificationOpen(
@@ -735,7 +772,9 @@ export default function CheckInPage() {
 
               {notificationOpen && (
                 <div className="absolute right-0 top-12 w-72 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111111]/95 shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl">
+
                   <div className="border-b border-white/[0.06] p-4">
+
                     <p className="text-[11px] font-semibold">
                       Notifications
                     </p>
@@ -743,28 +782,35 @@ export default function CheckInPage() {
                     <p className="mt-1 text-[8px] text-gray-600">
                       Recent system activities
                     </p>
+
                   </div>
 
                   <div className="p-2">
+
                     <NotificationItem
-                      title="Check-In Module"
-                      description="Property movement records are ready."
+                      title="Check-Out Module"
+                      description="Property release records are ready."
                     />
 
                     <NotificationItem
-                      title="Returned Properties"
-                      description={`${totalReturned} movement records have been recorded.`}
+                      title="Currently Out"
+                      description={`${currentlyOut} properties are currently outside the office.`}
                     />
 
                     <NotificationItem
                       title="Attention"
-                      description={`${needsAttention} returned properties require inspection.`}
+                      description={`${needsAttention} property records require inspection.`}
                     />
+
                   </div>
+
                 </div>
               )}
+
             </div>
+
           </div>
+
         </header>
 
         {/* =================================================
@@ -772,12 +818,16 @@ export default function CheckInPage() {
         ================================================= */}
 
         <div className="p-5 sm:p-7">
+
           {/* PAGE HEADER */}
 
           <div className="mb-7 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+
             <div>
+
               <div className="mb-2 flex items-center gap-2">
-                <History
+
+                <ArrowUpFromLine
                   size={14}
                   className="text-[#a70000]"
                 />
@@ -785,26 +835,33 @@ export default function CheckInPage() {
                 <span className="text-[8px] uppercase tracking-[0.2em] text-gray-600">
                   Property Movement Records
                 </span>
+
               </div>
 
+
               <p className="mt-2 max-w-2xl text-xs leading-5 text-gray-600">
-                Record and monitor properties that
-                were used outside the office and
-                subsequently returned.
+                Record and monitor properties
+                released from the office for
+                authorized activities, field work,
+                events, meetings, and other purposes.
               </p>
+
             </div>
 
             <button
               onClick={openAddModal}
               className="group flex items-center justify-center gap-2 rounded-xl bg-[#a70000] px-4 py-3 text-[10px] font-semibold shadow-[0_0_25px_rgba(167,0,0,0.18)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:bg-[#c00000] hover:shadow-[0_0_30px_rgba(220,0,0,0.3)]"
             >
+
               <Plus
                 size={15}
                 className="transition-all duration-300 group-hover:rotate-90 group-hover:drop-shadow-[0_0_7px_rgba(255,255,255,0.8)]"
               />
 
-              Record Check-In
+              Record Check-Out
+
             </button>
+
           </div>
 
           {/* =================================================
@@ -812,57 +869,65 @@ export default function CheckInPage() {
           ================================================= */}
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
             <SummaryCard
-              title="Total Returned"
-              value={totalReturned}
-              description="Recorded property movements"
+              title="Total Checked-Out"
+              value={totalCheckedOut}
+              description="Recorded property releases"
               icon={History}
             />
 
             <SummaryCard
-              title="Good Condition"
-              value={goodCondition}
-              description="Returned without issues"
+              title="Currently Out"
+              value={currentlyOut}
+              description="Properties currently on loan"
+              icon={ArrowUpFromLine}
+            />
+
+            <SummaryCard
+              title="Returned"
+              value={returned}
+              description="Properties already returned"
               icon={CheckCircle2}
             />
 
             <SummaryCard
               title="Needs Attention"
               value={needsAttention}
-              description="Requires inspection or repair"
+              description="Requires inspection"
               icon={AlertTriangle}
               danger
             />
 
-            <SummaryCard
-              title="Movement Tracking"
-              value="Active"
-              description="Property return monitoring"
-              icon={RotateCcw}
-            />
           </div>
 
           {/* =================================================
-              MOVEMENT TABLE
+              TABLE
           ================================================= */}
 
           <div className="mt-6 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 backdrop-blur-2xl transition-all duration-300 hover:border-[#a70000]/20 hover:shadow-[0_10px_40px_rgba(167,0,0,0.07)]">
+
             {/* TABLE HEADER */}
 
             <div className="mb-5 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+
               <div>
+
                 <h3 className="text-sm font-semibold">
-                  Property Movement Records
+                  Property Check-Out Records
                 </h3>
 
                 <p className="mt-1 text-[9px] text-gray-600">
-                  History of properties used outside
-                  the office and returned.
+                  History of properties released
+                  from the office.
                 </p>
+
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row">
+
                 <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2 sm:hidden">
+
                   <Search
                     size={14}
                     className="text-gray-700"
@@ -879,50 +944,45 @@ export default function CheckInPage() {
                     }
                     className="w-full bg-transparent text-[10px] text-gray-300 outline-none placeholder:text-gray-700"
                   />
+
                 </div>
 
                 <select
-                  value={conditionFilter}
+                  value={statusFilter}
                   onChange={(e) =>
-                    setConditionFilter(
+                    setStatusFilter(
                       e.target.value
                     )
                   }
                   className="rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2 text-[10px] text-gray-400 outline-none transition focus:border-[#a70000]/40"
                 >
                   <option value="All">
-                    All Conditions
+                    All Status
                   </option>
 
-                  <option value="Good">
-                    Good
+                  <option value="On Loan">
+                    On Loan
                   </option>
 
-                  <option value="Minor Damage">
-                    Minor Damage
-                  </option>
-
-                  <option value="Needs Repair">
-                    Needs Repair
-                  </option>
-
-                  <option value="Damaged">
-                    Damaged
-                  </option>
-
-                  <option value="Missing Parts">
-                    Missing Parts
+                  <option value="Returned">
+                    Returned
                   </option>
                 </select>
+
               </div>
+
             </div>
 
             {/* TABLE */}
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1050px]">
+
+              <table className="w-full min-w-[1150px]">
+
                 <thead>
+
                   <tr className="border-b border-white/[0.06] text-left">
+
                     <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
                       Property
                     </th>
@@ -936,11 +996,15 @@ export default function CheckInPage() {
                     </th>
 
                     <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
-                      Returned
+                      Expected Return
                     </th>
 
                     <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
                       Purpose
+                    </th>
+
+                    <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
+                      Status
                     </th>
 
                     <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
@@ -950,39 +1014,49 @@ export default function CheckInPage() {
                     <th className="pb-3 text-right text-[8px] uppercase tracking-wider text-gray-700">
                       Action
                     </th>
+
                   </tr>
+
                 </thead>
 
                 <tbody>
-                  {filteredMovements.length ===
-                  0 ? (
+
+                  {filteredMovements.length === 0 ? (
+
                     <tr>
+
                       <td
-                        colSpan={7}
+                        colSpan={8}
                         className="py-16 text-center"
                       >
+
                         <div className="mx-auto flex max-w-xs flex-col items-center">
+
                           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-gray-700">
                             <History size={20} />
                           </div>
 
                           <p className="text-xs text-gray-500">
-                            No movement records
-                            found.
+                            No check-out records found.
                           </p>
 
                           <p className="mt-1 text-[9px] text-gray-700">
-                            Try another search or
-                            record a new property
-                            return.
+                            Try another search or record
+                            a new property check-out.
                           </p>
+
                         </div>
+
                       </td>
+
                     </tr>
+
                   ) : (
+
                     filteredMovements.map(
                       (movement) => (
-                        <MovementRow
+
+                        <CheckOutRow
                           key={movement.id}
                           movement={movement}
                           onView={
@@ -994,35 +1068,54 @@ export default function CheckInPage() {
                           onDelete={
                             handleDelete
                           }
+                          onReturn={
+                            handleMarkReturned
+                          }
                         />
+
                       )
                     )
+
                   )}
+
                 </tbody>
+
               </table>
+
             </div>
 
             {/* FOOTER */}
 
             <div className="mt-4 flex items-center justify-between border-t border-white/[0.05] pt-4">
+
               <p className="text-[8px] text-gray-700">
+
                 Showing{" "}
+
                 <span className="text-gray-500">
                   {filteredMovements.length}
                 </span>{" "}
+
                 of{" "}
+
                 <span className="text-gray-500">
                   {movements.length}
                 </span>{" "}
+
                 records
+
               </p>
 
               <div className="flex items-center gap-2 text-[8px] text-gray-700">
+
                 <Clock3 size={11} />
 
-                Movement history
+                Check-out history
+
               </div>
+
             </div>
+
           </div>
 
           {/* =================================================
@@ -1030,53 +1123,65 @@ export default function CheckInPage() {
           ================================================= */}
 
           <div className="mt-6 rounded-2xl border border-[#a70000]/10 bg-[#a70000]/[0.025] p-5 transition-all duration-300 hover:border-[#a70000]/25 hover:shadow-[0_10px_35px_rgba(167,0,0,0.08)]">
+
             <div className="flex gap-4">
+
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#a70000]/10 text-[#a70000]">
-                <ArrowDownToLine size={18} />
+                <ArrowUpFromLine size={18} />
               </div>
 
               <div>
+
                 <h4 className="text-xs font-semibold text-gray-300">
-                  About Property Check-In
+                  About Property Check-Out
                 </h4>
 
                 <p className="mt-2 max-w-3xl text-[9px] leading-5 text-gray-600">
-                  This module records the movement of
-                  company properties that leave the
+                  This module records the release
+                  of company properties from the
                   office for field activities, events,
                   production work, meetings, or other
-                  authorized purposes. Once returned,
-                  the property condition and return
-                  details can be recorded for monitoring
-                  and accountability.
+                  authorized purposes. Each check-out
+                  record identifies the property,
+                  borrower, purpose, date and time
+                  released, expected return date,
+                  condition, and current status.
                 </p>
+
               </div>
+
             </div>
+
           </div>
+
         </div>
+
       </section>
 
       {/* =================================================
-          RECORD CHECK-IN MODAL
+          RECORD CHECK-OUT MODAL
       ================================================= */}
 
       {showModal && (
+
         <ModalOverlay
           onClose={() =>
             setShowModal(false)
           }
         >
+
           <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[#111111]/95 shadow-[0_25px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-200">
+
             <ModalHeader
               title={
                 editingMovement
-                  ? "Edit Movement Record"
-                  : "Record Property Check-In"
+                  ? "Edit Check-Out Record"
+                  : "Record Property Check-Out"
               }
               description={
                 editingMovement
-                  ? "Update the property movement record."
-                  : "Record the return of a property used outside the office."
+                  ? "Update the property release record."
+                  : "Record the release of a property from the office."
               }
               onClose={() =>
                 setShowModal(false)
@@ -1087,18 +1192,25 @@ export default function CheckInPage() {
               onSubmit={handleSubmit}
               className="max-h-[80vh] space-y-5 overflow-y-auto p-6"
             >
+
               {formError && (
+
                 <div className="rounded-xl border border-red-500/10 bg-red-500/[0.05] px-4 py-3">
+
                   <p className="text-[9px] text-red-300">
                     {formError}
                   </p>
+
                 </div>
+
               )}
 
               {/* PROPERTY */}
 
               <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+
                 <div className="mb-4 flex items-center gap-2">
+
                   <Package
                     size={14}
                     className="text-[#a70000]"
@@ -1107,9 +1219,11 @@ export default function CheckInPage() {
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-500">
                     Property Information
                   </p>
+
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
+
                   <FormInput
                     label="Property Code"
                     placeholder="e.g. PIMS-00005"
@@ -1160,24 +1274,30 @@ export default function CheckInPage() {
                     }
                     required
                   />
+
                 </div>
+
               </div>
 
               {/* MOVEMENT */}
 
               <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+
                 <div className="mb-4 flex items-center gap-2">
+
                   <History
                     size={14}
                     className="text-[#a70000]"
                   />
 
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-500">
-                    Movement Details
+                    Check-Out Details
                   </p>
+
                 </div>
 
                 <div className="space-y-4">
+
                   <FormInput
                     label="Purpose / Activity"
                     placeholder="e.g. Field production, event, meeting"
@@ -1191,6 +1311,7 @@ export default function CheckInPage() {
                   />
 
                   <div className="grid gap-4 sm:grid-cols-2">
+
                     <FormInput
                       label="Date Out"
                       type="date"
@@ -1218,51 +1339,59 @@ export default function CheckInPage() {
                     />
 
                     <FormInput
-                      label="Date Returned"
+                      label="Expected Return"
                       type="date"
-                      value={form.dateReturned}
+                      value={form.expectedReturn}
                       onChange={(e) =>
                         updateForm(
-                          "dateReturned",
+                          "expectedReturn",
                           e.target.value
                         )
                       }
-                      required
                     />
 
-                    <FormInput
-                      label="Time Returned"
-                      type="time"
-                      value={form.timeReturned}
+                    <FormSelect
+                      label="Status"
+                      value={form.status}
                       onChange={(e) =>
                         updateForm(
-                          "timeReturned",
+                          "status",
                           e.target.value
                         )
                       }
-                      required
+                      options={[
+                        "On Loan",
+                        "Returned",
+                      ]}
                     />
+
                   </div>
+
                 </div>
+
               </div>
 
               {/* CONDITION */}
 
               <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+
                 <div className="mb-4 flex items-center gap-2">
+
                   <CheckCircle2
                     size={14}
                     className="text-[#a70000]"
                   />
 
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-500">
-                    Return Condition
+                    Property Condition
                   </p>
+
                 </div>
 
                 <div className="space-y-4">
+
                   <FormSelect
-                    label="Condition Upon Return"
+                    label="Condition Upon Release"
                     value={form.condition}
                     onChange={(e) =>
                       updateForm(
@@ -1281,7 +1410,7 @@ export default function CheckInPage() {
 
                   <FormTextarea
                     label="Remarks"
-                    placeholder="Enter details about the returned property."
+                    placeholder="Enter details about the property or activity."
                     value={form.remarks}
                     onChange={(e) =>
                       updateForm(
@@ -1290,7 +1419,9 @@ export default function CheckInPage() {
                       )
                     }
                   />
+
                 </div>
+
               </div>
 
               {/* BUTTONS */}
@@ -1302,21 +1433,25 @@ export default function CheckInPage() {
                 submitText={
                   editingMovement
                     ? "Save Changes"
-                    : "Record Check-In"
+                    : "Record Check-Out"
                 }
                 submitIcon={
                   editingMovement ? (
                     <Save size={14} />
                   ) : (
-                    <ArrowDownToLine
+                    <ArrowUpFromLine
                       size={14}
                     />
                   )
                 }
               />
+
             </form>
+
           </div>
+
         </ModalOverlay>
+
       )}
 
       {/* =================================================
@@ -1325,14 +1460,17 @@ export default function CheckInPage() {
 
       {showViewModal &&
         selectedMovement && (
+
           <ModalOverlay
             onClose={() =>
               setShowViewModal(false)
             }
           >
+
             <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#111111]/95 shadow-[0_25px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-200">
+
               <ModalHeader
-                title="Movement Details"
+                title="Check-Out Details"
                 description={`Movement record ${selectedMovement.id}`}
                 onClose={() =>
                   setShowViewModal(false)
@@ -1340,40 +1478,40 @@ export default function CheckInPage() {
               />
 
               <div className="space-y-5 p-6">
+
                 {/* PROPERTY HEADER */}
 
                 <div className="flex items-center gap-4 rounded-xl border border-[#a70000]/10 bg-[#a70000]/[0.035] p-4">
+
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#a70000]/10 text-[#a70000]">
                     <Package size={21} />
                   </div>
 
                   <div className="min-w-0">
+
                     <p className="text-[8px] uppercase tracking-wider text-gray-700">
                       Property
                     </p>
 
                     <h3 className="mt-1 truncate text-sm font-semibold text-gray-200">
-                      {
-                        selectedMovement.propertyName
-                      }
+                      {selectedMovement.propertyName}
                     </h3>
 
                     <p className="mt-1 text-[9px] text-gray-600">
-                      {
-                        selectedMovement.propertyId
-                      }{" "}
-                      •{" "}
-                      {
-                        selectedMovement.category ||
-                        "Uncategorized"
-                      }
+                      {selectedMovement.propertyId}
+                      {" • "}
+                      {selectedMovement.category ||
+                        "Uncategorized"}
                     </p>
+
                   </div>
+
                 </div>
 
                 {/* DETAILS */}
 
                 <div className="grid gap-3 sm:grid-cols-2">
+
                   <DetailItem
                     label="Borrower / Employee"
                     value={
@@ -1395,8 +1533,11 @@ export default function CheckInPage() {
                   />
 
                   <DetailItem
-                    label="Date Returned"
-                    value={`${selectedMovement.dateReturned} ${selectedMovement.timeReturned}`}
+                    label="Expected Return"
+                    value={
+                      selectedMovement.expectedReturn ||
+                      "Not specified"
+                    }
                   />
 
                   <DetailItem
@@ -1412,11 +1553,13 @@ export default function CheckInPage() {
                       selectedMovement.status
                     }
                   />
+
                 </div>
 
                 {/* REMARKS */}
 
                 <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+
                   <p className="text-[8px] uppercase tracking-wider text-gray-700">
                     Remarks
                   </p>
@@ -1425,6 +1568,7 @@ export default function CheckInPage() {
                     {selectedMovement.remarks ||
                       "No remarks provided."}
                   </p>
+
                 </div>
 
                 <button
@@ -1436,36 +1580,53 @@ export default function CheckInPage() {
                 >
                   Close
                 </button>
+
               </div>
+
             </div>
+
           </ModalOverlay>
+
         )}
+
     </main>
   );
 }
 
 // =====================================================
-// MOVEMENT ROW
+// CHECK-OUT ROW
 // =====================================================
 
-function MovementRow({
+function CheckOutRow({
   movement,
   onView,
   onEdit,
   onDelete,
+  onReturn,
 }) {
   const isAttention =
     movement.condition !== "Good";
 
+  const isReturned =
+    movement.status === "Returned";
+
   return (
     <tr className="group border-b border-white/[0.04] transition-all duration-300 hover:bg-[#a70000]/[0.035]">
+
+      {/* PROPERTY */}
+
       <td className="py-4">
+
         <div className="flex items-center gap-3">
+
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#a70000]/10 bg-[#a70000]/[0.06] text-gray-600 transition-all duration-300 group-hover:scale-110 group-hover:border-[#a70000]/30 group-hover:bg-[#a70000]/15 group-hover:text-[#ff1f1f] group-hover:shadow-[0_0_15px_rgba(255,0,0,0.16)]">
+
             <Package size={15} />
+
           </div>
 
           <div>
+
             <p className="text-[10px] font-medium text-gray-300 transition-colors duration-300 group-hover:text-white">
               {movement.propertyName}
             </p>
@@ -1473,15 +1634,23 @@ function MovementRow({
             <p className="mt-1 text-[8px] text-gray-700">
               {movement.propertyId}
             </p>
+
           </div>
+
         </div>
+
       </td>
+
+      {/* BORROWER */}
 
       <td className="py-4 text-[10px] text-gray-500">
         {movement.employee}
       </td>
 
+      {/* DATE OUT */}
+
       <td className="py-4">
+
         <div className="text-[9px] text-gray-500">
           {movement.dateOut}
         </div>
@@ -1489,26 +1658,51 @@ function MovementRow({
         <div className="mt-1 text-[8px] text-gray-700">
           {movement.timeOut}
         </div>
+
       </td>
+
+      {/* EXPECTED RETURN */}
 
       <td className="py-4">
+
         <div className="text-[9px] text-gray-500">
-          {movement.dateReturned}
+          {movement.expectedReturn ||
+            "Not specified"}
         </div>
 
-        <div className="mt-1 text-[8px] text-gray-700">
-          {movement.timeReturned}
-        </div>
       </td>
 
-      <td className="py-4 max-w-[180px]">
+      {/* PURPOSE */}
+
+      <td className="max-w-[180px] py-4">
+
         <p className="truncate text-[9px] text-gray-500">
           {movement.purpose ||
             "Not specified"}
         </p>
+
       </td>
 
+      {/* STATUS */}
+
       <td className="py-4">
+
+        <span
+          className={`inline-flex rounded-full px-2 py-1 text-[8px] ${
+            isReturned
+              ? "border border-green-500/10 bg-green-500/10 text-green-400"
+              : "border border-blue-500/10 bg-blue-500/10 text-blue-300"
+          }`}
+        >
+          {movement.status}
+        </span>
+
+      </td>
+
+      {/* CONDITION */}
+
+      <td className="py-4">
+
         <span
           className={`inline-flex rounded-full px-2 py-1 text-[8px] ${
             isAttention
@@ -1518,10 +1712,15 @@ function MovementRow({
         >
           {movement.condition}
         </span>
+
       </td>
 
+      {/* ACTION */}
+
       <td className="py-4">
+
         <div className="flex justify-end gap-1">
+
           <IconButton
             icon={Eye}
             title="View"
@@ -1538,6 +1737,16 @@ function MovementRow({
             }
           />
 
+          {!isReturned && (
+            <IconButton
+              icon={ArrowDownToLine}
+              title="Mark as Returned"
+              onClick={() =>
+                onReturn(movement)
+              }
+            />
+          )}
+
           <IconButton
             icon={Trash2}
             title="Delete"
@@ -1551,8 +1760,11 @@ function MovementRow({
             size={13}
             className="ml-1 text-gray-800 transition-all duration-300 group-hover:translate-x-1 group-hover:text-[#a70000]"
           />
+
         </div>
+
       </td>
+
     </tr>
   );
 }
@@ -1570,10 +1782,13 @@ function SummaryCard({
 }) {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-[#a70000]/30 hover:bg-[#a70000]/[0.04] hover:shadow-[0_10px_35px_rgba(167,0,0,0.16)]">
+
       <div className="absolute left-0 top-0 h-full w-0.5 bg-[#a70000] opacity-30 transition-all duration-300 group-hover:opacity-100 group-hover:shadow-[0_0_12px_#a70000]" />
 
       <div className="flex items-start justify-between">
+
         <div>
+
           <p className="text-[9px] uppercase tracking-wider text-gray-600">
             {title}
           </p>
@@ -1581,6 +1796,7 @@ function SummaryCard({
           <p className="mt-2 text-2xl font-bold">
             {value}
           </p>
+
         </div>
 
         <div
@@ -1590,16 +1806,20 @@ function SummaryCard({
               : "border-[#a70000]/15 bg-[#a70000]/10 text-[#a70000]"
           }`}
         >
+
           <Icon
             size={19}
             className="transition-all duration-300 group-hover:drop-shadow-[0_0_7px_rgba(255,0,0,0.85)]"
           />
+
         </div>
+
       </div>
 
       <p className="mt-4 text-[9px] text-gray-600">
         {description}
       </p>
+
     </div>
   );
 }
@@ -1643,6 +1863,7 @@ function DetailItem({
 }) {
   return (
     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+
       <p className="text-[8px] uppercase tracking-wider text-gray-700">
         {label}
       </p>
@@ -1650,6 +1871,7 @@ function DetailItem({
       <p className="mt-2 text-[10px] text-gray-400">
         {value}
       </p>
+
     </div>
   );
 }
@@ -1689,7 +1911,9 @@ function ModalHeader({
 }) {
   return (
     <div className="flex items-start justify-between border-b border-white/[0.06] p-6">
+
       <div>
+
         <h2 className="text-sm font-semibold">
           {title}
         </h2>
@@ -1697,15 +1921,17 @@ function ModalHeader({
         <p className="mt-1 text-[9px] text-gray-600">
           {description}
         </p>
+
       </div>
 
       <button
         type="button"
         onClick={onClose}
-        className="rounded-lg p-1 text-gray-600 transition-all duration-300 hover:bg-[#a70000]/10 hover:text-[#ff2222] hover:shadow-[0_0_12px_rgba(255,0,0,0.15)]"
+        className="rounded-lg p-1 text-gray-600 transition-all duration-300 hover:bg-[#a70000]/10 hover:text-[#ff2222] hover:shadow-[0_0_12px_rgba(167,0,0,0.15)]"
       >
         <X size={18} />
       </button>
+
     </div>
   );
 }
@@ -1724,6 +1950,7 @@ function FormInput({
 }) {
   return (
     <div>
+
       <label className="mb-2 block text-[9px] uppercase tracking-wider text-gray-500">
         {label}
         {required && " *"}
@@ -1737,6 +1964,7 @@ function FormInput({
         required={required}
         className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white outline-none placeholder:text-gray-700 transition-all duration-300 focus:border-[#a70000]/50 focus:ring-1 focus:ring-[#a70000]/20"
       />
+
     </div>
   );
 }
@@ -1753,6 +1981,7 @@ function FormSelect({
 }) {
   return (
     <div>
+
       <label className="mb-2 block text-[9px] uppercase tracking-wider text-gray-500">
         {label}
       </label>
@@ -1762,6 +1991,7 @@ function FormSelect({
         onChange={onChange}
         className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-gray-300 outline-none transition-all duration-300 focus:border-[#a70000]/50 focus:ring-1 focus:ring-[#a70000]/20"
       >
+
         {options.map((option) => (
           <option
             key={option}
@@ -1770,7 +2000,9 @@ function FormSelect({
             {option}
           </option>
         ))}
+
       </select>
+
     </div>
   );
 }
@@ -1787,6 +2019,7 @@ function FormTextarea({
 }) {
   return (
     <div>
+
       <label className="mb-2 block text-[9px] uppercase tracking-wider text-gray-500">
         {label}
       </label>
@@ -1798,6 +2031,7 @@ function FormTextarea({
         rows={3}
         className="w-full resize-none rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white outline-none placeholder:text-gray-700 transition-all duration-300 focus:border-[#a70000]/50 focus:ring-1 focus:ring-[#a70000]/20"
       />
+
     </div>
   );
 }
@@ -1813,6 +2047,7 @@ function ModalButtons({
 }) {
   return (
     <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-5">
+
       <button
         type="button"
         onClick={onCancel}
@@ -1829,6 +2064,7 @@ function ModalButtons({
 
         {submitText}
       </button>
+
     </div>
   );
 }
@@ -1843,9 +2079,11 @@ function NotificationItem({
 }) {
   return (
     <div className="flex gap-3 rounded-xl p-3 transition hover:bg-white/[0.025]">
+
       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#a70000] shadow-[0_0_7px_#a70000]" />
 
       <div>
+
         <p className="text-[9px] font-medium text-gray-300">
           {title}
         </p>
@@ -1853,7 +2091,9 @@ function NotificationItem({
         <p className="mt-1 text-[8px] leading-4 text-gray-600">
           {description}
         </p>
+
       </div>
+
     </div>
   );
 }

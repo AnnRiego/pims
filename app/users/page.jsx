@@ -1,10 +1,8 @@
-
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { usePathname, useRouter } from "next/navigation";
-
 
 import {
   LayoutDashboard,
@@ -24,60 +22,69 @@ import {
   Eye,
   Edit3,
   Trash2,
-  RotateCcw,
-  CheckCircle2,
-  Clock3,
-  History,
-  AlertTriangle,
-  ChevronRight,
+  UserCheck,
+  UserX,
+  ShieldCheck,
+  Mail,
+  Phone,
   Save,
+  ChevronRight,
 } from "lucide-react";
 
 // =====================================================
-// STORAGE KEYS
+// STORAGE
 // =====================================================
 
-const MOVEMENTS_STORAGE_KEY = "pimsCheckInMovements";
+const USERS_STORAGE_KEY = "pimsUsers";
 
 // =====================================================
-// DEFAULT MOVEMENT DATA
+// DEFAULT USERS
 // =====================================================
 
-const defaultMovements = [
+const defaultUsers = [
   {
-    id: "CI-00001",
-    propertyId: "PIMS-00002",
-    propertyName: "MacBook Pro 16-inch",
-    category: "Computer / Laptop",
-    employee: "Maria Santos",
-    purpose: "Field Activity",
-    dateOut: "2026-08-08",
-    timeOut: "08:30",
-    dateReturned: "2026-08-08",
-    timeReturned: "17:15",
-    condition: "Good",
-    remarks: "Returned complete and operational.",
-    status: "Returned",
+    id: "USR-00001",
+    firstName: "Juan",
+    lastName: "Dela Cruz",
+    username: "juan.delacruz",
+    email: "juan.delacruz@pims.com",
+    phone: "09171234567",
+    role: "Manager",
+    department: "Property Management",
+    status: "Active",
+    password: "password123",
+    dateCreated: "2026-08-01",
   },
   {
-    id: "CI-00002",
-    propertyId: "PIMS-00004",
-    propertyName: "Allen & Heath Mixer",
-    category: "Audio Equipment",
-    employee: "Carlo Mendoza",
-    purpose: "Event Production",
-    dateOut: "2026-08-07",
-    timeOut: "09:00",
-    dateReturned: "2026-08-07",
-    timeReturned: "19:30",
-    condition: "Good",
-    remarks: "No issues reported.",
-    status: "Returned",
+    id: "USR-00002",
+    firstName: "Maria",
+    lastName: "Santos",
+    username: "maria.santos",
+    email: "maria.santos@pims.com",
+    phone: "09181234567",
+    role: "Staff",
+    department: "Property Management",
+    status: "Active",
+    password: "password123",
+    dateCreated: "2026-08-03",
+  },
+  {
+    id: "USR-00003",
+    firstName: "Carlo",
+    lastName: "Mendoza",
+    username: "carlo.mendoza",
+    email: "carlo.mendoza@pims.com",
+    phone: "09191234567",
+    role: "Staff",
+    department: "Administrative",
+    status: "Inactive",
+    password: "password123",
+    dateCreated: "2026-08-05",
   },
 ];
 
 // =====================================================
-// SIDEBAR
+// SIDEBAR MENU
 // =====================================================
 
 const menuItems = [
@@ -122,40 +129,55 @@ const menuItems = [
 // MAIN PAGE
 // =====================================================
 
-export default function CheckInPage() {
+export default function ManageUsersPage() {
   const router = useRouter();
   const pathname = usePathname();
 
   // ===================================================
-  // AUTH / UI
+  // AUTH
   // ===================================================
 
   const [user, setUser] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [notificationOpen, setNotificationOpen] = useState(false);
 
   // ===================================================
-  // MOVEMENT STATE
+  // UI
   // ===================================================
 
-  const [movements, setMovements] = useState([]);
+  const [sidebarOpen, setSidebarOpen] =
+    useState(false);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [notificationOpen, setNotificationOpen] =
+    useState(false);
 
-  const [conditionFilter, setConditionFilter] =
+  // ===================================================
+  // USERS
+  // ===================================================
+
+  const [users, setUsers] = useState([]);
+
+  const [searchTerm, setSearchTerm] =
+    useState("");
+
+  const [roleFilter, setRoleFilter] =
+    useState("All");
+
+  const [statusFilter, setStatusFilter] =
     useState("All");
 
   // ===================================================
-  // MODAL STATE
+  // MODALS
   // ===================================================
 
-  const [showModal, setShowModal] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
+  const [showModal, setShowModal] =
+    useState(false);
 
-  const [editingMovement, setEditingMovement] =
+  const [showViewModal, setShowViewModal] =
+    useState(false);
+
+  const [editingUser, setEditingUser] =
     useState(null);
 
-  const [selectedMovement, setSelectedMovement] =
+  const [selectedUser, setSelectedUser] =
     useState(null);
 
   // ===================================================
@@ -163,22 +185,22 @@ export default function CheckInPage() {
   // ===================================================
 
   const emptyForm = {
-    propertyId: "",
-    propertyName: "",
-    category: "",
-    employee: "",
-    purpose: "",
-    dateOut: "",
-    timeOut: "",
-    dateReturned: "",
-    timeReturned: "",
-    condition: "Good",
-    remarks: "",
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    phone: "",
+    role: "Staff",
+    department: "",
+    status: "Active",
+    password: "",
   };
 
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] =
+    useState(emptyForm);
 
-  const [formError, setFormError] = useState("");
+  const [formError, setFormError] =
+    useState("");
 
   // ===================================================
   // AUTHENTICATION
@@ -186,13 +208,17 @@ export default function CheckInPage() {
 
   useEffect(() => {
     const authenticated =
-      sessionStorage.getItem("pimsAuthenticated");
+      sessionStorage.getItem(
+        "pimsAuthenticated"
+      );
 
     const storedUser =
-      sessionStorage.getItem("pimsUser");
+      sessionStorage.getItem(
+        "pimsUser"
+      );
 
     if (authenticated !== "true") {
-      router.replace("/login");
+      router.replace("/");
       return;
     }
 
@@ -204,7 +230,9 @@ export default function CheckInPage() {
           "pimsAuthenticated"
         );
 
-        sessionStorage.removeItem("pimsUser");
+        sessionStorage.removeItem(
+          "pimsUser"
+        );
 
         router.replace("/");
       }
@@ -212,43 +240,43 @@ export default function CheckInPage() {
   }, [router]);
 
   // ===================================================
-  // LOAD MOVEMENTS
+  // LOAD USERS
   // ===================================================
 
   useEffect(() => {
     const stored =
       localStorage.getItem(
-        MOVEMENTS_STORAGE_KEY
+        USERS_STORAGE_KEY
       );
 
     if (stored) {
       try {
-        setMovements(JSON.parse(stored));
+        setUsers(JSON.parse(stored));
       } catch {
-        setMovements(defaultMovements);
+        setUsers(defaultUsers);
       }
     } else {
-      setMovements(defaultMovements);
+      setUsers(defaultUsers);
 
       localStorage.setItem(
-        MOVEMENTS_STORAGE_KEY,
-        JSON.stringify(defaultMovements)
+        USERS_STORAGE_KEY,
+        JSON.stringify(defaultUsers)
       );
     }
   }, []);
 
   // ===================================================
-  // SAVE MOVEMENTS
+  // SAVE USERS
   // ===================================================
 
   useEffect(() => {
-    if (movements.length > 0) {
+    if (users.length > 0) {
       localStorage.setItem(
-        MOVEMENTS_STORAGE_KEY,
-        JSON.stringify(movements)
+        USERS_STORAGE_KEY,
+        JSON.stringify(users)
       );
     }
-  }, [movements]);
+  }, [users]);
 
   // ===================================================
   // LOGOUT
@@ -259,7 +287,9 @@ export default function CheckInPage() {
       "pimsAuthenticated"
     );
 
-    sessionStorage.removeItem("pimsUser");
+    sessionStorage.removeItem(
+      "pimsUser"
+    );
 
     router.replace("/");
   }
@@ -271,54 +301,39 @@ export default function CheckInPage() {
   function navigateTo(route) {
     setSidebarOpen(false);
     setNotificationOpen(false);
+
     router.push(route);
   }
 
   // ===================================================
-  // OPEN ADD / RECORD MODAL
+  // OPEN ADD USER
   // ===================================================
 
-  function openAddModal() {
-    setEditingMovement(null);
+  function openAddUser() {
+    setEditingUser(null);
     setFormError("");
-
-    const now = new Date();
-
-    const today =
-      now.toISOString().split("T")[0];
-
-    const currentTime =
-      now.toTimeString().slice(0, 5);
-
-    setForm({
-      ...emptyForm,
-      dateReturned: today,
-      timeReturned: currentTime,
-    });
-
+    setForm(emptyForm);
     setShowModal(true);
   }
 
   // ===================================================
-  // OPEN EDIT
+  // OPEN EDIT USER
   // ===================================================
 
-  function openEditModal(movement) {
-    setEditingMovement(movement);
+  function openEditUser(selected) {
+    setEditingUser(selected);
     setFormError("");
 
     setForm({
-      propertyId: movement.propertyId,
-      propertyName: movement.propertyName,
-      category: movement.category,
-      employee: movement.employee,
-      purpose: movement.purpose,
-      dateOut: movement.dateOut,
-      timeOut: movement.timeOut,
-      dateReturned: movement.dateReturned,
-      timeReturned: movement.timeReturned,
-      condition: movement.condition,
-      remarks: movement.remarks,
+      firstName: selected.firstName,
+      lastName: selected.lastName,
+      username: selected.username,
+      email: selected.email,
+      phone: selected.phone,
+      role: selected.role,
+      department: selected.department,
+      status: selected.status,
+      password: selected.password,
     });
 
     setShowModal(true);
@@ -328,13 +343,13 @@ export default function CheckInPage() {
   // OPEN VIEW
   // ===================================================
 
-  function openViewModal(movement) {
-    setSelectedMovement(movement);
+  function openViewUser(selected) {
+    setSelectedUser(selected);
     setShowViewModal(true);
   }
 
   // ===================================================
-  // FORM CHANGE
+  // UPDATE FORM
   // ===================================================
 
   function updateForm(field, value) {
@@ -345,7 +360,7 @@ export default function CheckInPage() {
   }
 
   // ===================================================
-  // SUBMIT MOVEMENT
+  // SUBMIT USER
   // ===================================================
 
   function handleSubmit(e) {
@@ -354,13 +369,11 @@ export default function CheckInPage() {
     setFormError("");
 
     if (
-      !form.propertyId ||
-      !form.propertyName ||
-      !form.employee ||
-      !form.dateOut ||
-      !form.timeOut ||
-      !form.dateReturned ||
-      !form.timeReturned
+      !form.firstName ||
+      !form.lastName ||
+      !form.username ||
+      !form.email ||
+      !form.role
     ) {
       setFormError(
         "Please complete all required fields."
@@ -369,57 +382,67 @@ export default function CheckInPage() {
       return;
     }
 
-    if (
-      `${form.dateReturned}T${form.timeReturned}` <
-      `${form.dateOut}T${form.timeOut}`
-    ) {
+    // Check duplicate username
+    const duplicateUsername =
+      users.some(
+        (item) =>
+          item.username.toLowerCase() ===
+            form.username.toLowerCase() &&
+          item.id !==
+            editingUser?.id
+      );
+
+    if (duplicateUsername) {
       setFormError(
-        "Return date and time cannot be earlier than the date and time out."
+        "Username already exists. Please use another username."
       );
 
       return;
     }
 
-    // ===============================================
+    // =================================================
     // EDIT
-    // ===============================================
+    // =================================================
 
-    if (editingMovement) {
-      setMovements((current) =>
+    if (editingUser) {
+      setUsers((current) =>
         current.map((item) =>
-          item.id === editingMovement.id
+          item.id === editingUser.id
             ? {
                 ...item,
                 ...form,
-                status: "Returned",
               }
             : item
         )
       );
 
       setShowModal(false);
-      setEditingMovement(null);
+      setEditingUser(null);
+      setForm(emptyForm);
 
       return;
     }
 
-    // ===============================================
+    // =================================================
     // CREATE
-    // ===============================================
+    // =================================================
 
     const newId =
-      `CI-${String(
-        movements.length + 1
+      `USR-${String(
+        users.length + 1
       ).padStart(5, "0")}`;
 
-    const newMovement = {
+    const newUser = {
       id: newId,
       ...form,
-      status: "Returned",
+      dateCreated:
+        new Date()
+          .toISOString()
+          .split("T")[0],
     };
 
-    setMovements((current) => [
-      newMovement,
+    setUsers((current) => [
+      newUser,
       ...current,
     ]);
 
@@ -428,77 +451,126 @@ export default function CheckInPage() {
   }
 
   // ===================================================
-  // DELETE MOVEMENT
+  // DELETE USER
   // ===================================================
 
   function handleDelete(id) {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this movement record?"
-    );
+    const targetUser =
+      users.find(
+        (item) => item.id === id
+      );
+
+    if (!targetUser) return;
+
+    const confirmed =
+      window.confirm(
+        `Are you sure you want to delete ${targetUser.firstName} ${targetUser.lastName}?`
+      );
 
     if (!confirmed) return;
 
-    setMovements((current) =>
-      current.filter((item) => item.id !== id)
+    setUsers((current) =>
+      current.filter(
+        (item) => item.id !== id
+      )
     );
   }
 
   // ===================================================
-  // FILTERED RECORDS
+  // TOGGLE STATUS
   // ===================================================
 
-  const filteredMovements = useMemo(() => {
-    return movements.filter((item) => {
+  function toggleStatus(selected) {
+    const newStatus =
+      selected.status === "Active"
+        ? "Inactive"
+        : "Active";
+
+    setUsers((current) =>
+      current.map((item) =>
+        item.id === selected.id
+          ? {
+              ...item,
+              status: newStatus,
+            }
+          : item
+      )
+    );
+  }
+
+  // ===================================================
+  // FILTER USERS
+  // ===================================================
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((item) => {
       const search =
         searchTerm.toLowerCase();
 
+      const fullName =
+        `${item.firstName} ${item.lastName}`
+          .toLowerCase();
+
       const matchesSearch =
-        item.id.toLowerCase().includes(search) ||
-        item.propertyId
+        fullName.includes(search) ||
+        item.username
           .toLowerCase()
           .includes(search) ||
-        item.propertyName
+        item.email
           .toLowerCase()
           .includes(search) ||
-        item.employee
+        item.id
           .toLowerCase()
           .includes(search) ||
-        item.purpose
+        item.department
           .toLowerCase()
           .includes(search);
 
-      const matchesCondition =
-        conditionFilter === "All" ||
-        item.condition === conditionFilter;
+      const matchesRole =
+        roleFilter === "All" ||
+        item.role === roleFilter;
+
+      const matchesStatus =
+        statusFilter === "All" ||
+        item.status === statusFilter;
 
       return (
         matchesSearch &&
-        matchesCondition
+        matchesRole &&
+        matchesStatus
       );
     });
   }, [
-    movements,
+    users,
     searchTerm,
-    conditionFilter,
+    roleFilter,
+    statusFilter,
   ]);
 
   // ===================================================
   // STATISTICS
   // ===================================================
 
-  const totalReturned = movements.length;
+  const totalUsers =
+    users.length;
 
-  const goodCondition = movements.filter(
-    (item) => item.condition === "Good"
-  ).length;
+  const activeUsers =
+    users.filter(
+      (item) =>
+        item.status === "Active"
+    ).length;
 
-  const needsAttention = movements.filter(
-    (item) =>
-      item.condition === "Minor Damage" ||
-      item.condition === "Needs Repair" ||
-      item.condition === "Damaged" ||
-      item.condition === "Missing Parts"
-  ).length;
+  const managerUsers =
+    users.filter(
+      (item) =>
+        item.role === "Manager"
+    ).length;
+
+  const staffUsers =
+    users.filter(
+      (item) =>
+        item.role === "Staff"
+    ).length;
 
   // ===================================================
   // LOADING
@@ -507,12 +579,17 @@ export default function CheckInPage() {
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#090909] text-gray-500">
+
         <div className="text-center">
+
           <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-[#a70000] border-t-transparent" />
+
           <p className="text-xs">
             Loading PIMS...
           </p>
+
         </div>
+
       </div>
     );
   }
@@ -523,6 +600,7 @@ export default function CheckInPage() {
 
   return (
     <main className="min-h-screen bg-[#090909] text-white">
+
       {/* BACKGROUND */}
 
       <div
@@ -552,20 +630,22 @@ export default function CheckInPage() {
           SIDEBAR
       ================================================= */}
 
-      
-        <Sidebar
-         sidebarOpen={sidebarOpen}
-         setSidebarOpen={setSidebarOpen}
-        />
+          <Sidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          />
         {/* LOGO */}
 
         <div className="flex h-20 items-center justify-between border-b border-white/[0.06] px-5">
+
           <div className="flex items-center gap-3">
+
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#a70000] shadow-[0_0_30px_rgba(167,0,0,0.25)]">
               <Package size={20} />
             </div>
 
             <div>
+
               <h1 className="text-sm font-bold tracking-[0.15em]">
                 PIMS
               </h1>
@@ -573,7 +653,9 @@ export default function CheckInPage() {
               <p className="text-[7px] uppercase tracking-[0.2em] text-gray-600">
                 Property Management
               </p>
+
             </div>
+
           </div>
 
           <button
@@ -584,17 +666,21 @@ export default function CheckInPage() {
           >
             <X size={20} />
           </button>
+
         </div>
 
         {/* MENU */}
 
         <nav className="flex-1 overflow-y-auto p-4">
+
           <p className="mb-3 px-3 text-[8px] uppercase tracking-[0.2em] text-gray-700">
             Main Menu
           </p>
 
           <div className="space-y-1">
+
             {menuItems.map((item) => {
+
               const Icon = item.icon;
 
               const isActive =
@@ -612,12 +698,13 @@ export default function CheckInPage() {
                       : "border border-transparent text-gray-600 hover:border-[#a70000]/20 hover:bg-[#a70000]/[0.04] hover:text-gray-300"
                   }`}
                 >
+
                   <Icon
                     size={17}
                     className={`transition-all duration-300 ${
                       isActive
                         ? "text-[#ff2a2a] drop-shadow-[0_0_8px_rgba(255,0,0,0.7)]"
-                        : "text-gray-700 group-hover:text-[#ff1a1a] group-hover:drop-shadow-[0_0_8px_rgba(255,0,0,0.8)]"
+                        : "text-gray-700 group-hover:text-[#ff1a1a]"
                     }`}
                   />
 
@@ -628,21 +715,28 @@ export default function CheckInPage() {
                   {isActive && (
                     <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#a70000] shadow-[0_0_8px_#a70000]" />
                   )}
+
                 </button>
               );
+
             })}
+
           </div>
+
         </nav>
 
         {/* USER */}
 
         <div className="border-t border-white/[0.06] p-4">
+
           <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.025] p-3">
+
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#a70000]/10 text-[#a70000]">
               <UserCircle size={20} />
             </div>
 
             <div className="min-w-0">
+
               <p className="truncate text-[10px] font-semibold text-gray-300">
                 {user.name}
               </p>
@@ -650,20 +744,26 @@ export default function CheckInPage() {
               <p className="truncate text-[8px] text-gray-600">
                 {user.role}
               </p>
+
             </div>
+
           </div>
 
           <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-gray-600 transition-all duration-300 hover:bg-[#a70000]/10 hover:text-red-300"
           >
+
             <LogOut size={16} />
 
             <span className="text-[10px]">
               Logout
             </span>
+
           </button>
+
         </div>
+
 
       {/* =================================================
           MAIN
@@ -679,6 +779,7 @@ export default function CheckInPage() {
          border-white/[0.06] bg-[#090909]/80 px-5 backdrop-blur-2xl sm:px-7 lg:left-64">
 
           <div className="flex items-center gap-4">
+
             <button
               onClick={() =>
                 setSidebarOpen(true)
@@ -689,18 +790,23 @@ export default function CheckInPage() {
             </button>
 
             <div>
+
               <p className="text-[8px] uppercase tracking-[0.2em] text-gray-700">
                 Property Inventory & Management
               </p>
 
               <h2 className="mt-1 text-lg font-semibold">
-                Property Check-In
+                User Management
               </h2>
+
             </div>
+
           </div>
 
           <div className="flex items-center gap-3">
+
             <div className="hidden items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.025] px-3 py-2 sm:flex">
+
               <Search
                 size={14}
                 className="text-gray-700"
@@ -717,152 +823,180 @@ export default function CheckInPage() {
                 }
                 className="w-28 bg-transparent text-[10px] text-gray-300 outline-none placeholder:text-gray-700"
               />
+
             </div>
 
             <div className="relative">
+
               <button
                 onClick={() =>
                   setNotificationOpen(
                     !notificationOpen
                   )
                 }
-                className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-gray-500 transition-all duration-300 hover:border-[#a70000]/30 hover:text-[#ff2222] hover:shadow-[0_0_18px_rgba(167,0,0,0.12)]"
+                className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-gray-500 transition-all duration-300 hover:border-[#a70000]/30 hover:text-[#ff2222]"
               >
+
                 <Bell size={16} />
 
                 <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#a70000] shadow-[0_0_6px_#a70000]" />
+
               </button>
 
               {notificationOpen && (
                 <div className="absolute right-0 top-12 w-72 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111111]/95 shadow-[0_20px_60px_rgba(0,0,0,0.6)] backdrop-blur-2xl">
+
                   <div className="border-b border-white/[0.06] p-4">
+
                     <p className="text-[11px] font-semibold">
                       Notifications
                     </p>
 
                     <p className="mt-1 text-[8px] text-gray-600">
-                      Recent system activities
+                      User management activities
                     </p>
+
                   </div>
 
                   <div className="p-2">
+
                     <NotificationItem
-                      title="Check-In Module"
-                      description="Property movement records are ready."
+                      title="User Management"
+                      description={`${totalUsers} user accounts are registered.`}
                     />
 
                     <NotificationItem
-                      title="Returned Properties"
-                      description={`${totalReturned} movement records have been recorded.`}
+                      title="Active Accounts"
+                      description={`${activeUsers} users currently have active accounts.`}
                     />
 
                     <NotificationItem
-                      title="Attention"
-                      description={`${needsAttention} returned properties require inspection.`}
+                      title="Manager Accounts"
+                      description={`${managerUsers} manager account${managerUsers === 1 ? "" : "s"} registered.`}
                     />
+
                   </div>
+
                 </div>
               )}
+
             </div>
+
           </div>
+
         </header>
 
-        {/* =================================================
-            BODY
-        ================================================= */}
+        {/* BODY */}
 
         <div className="p-5 sm:p-7">
-          {/* PAGE HEADER */}
+
+          {/* PAGE TITLE */}
 
           <div className="mb-7 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+
             <div>
+
               <div className="mb-2 flex items-center gap-2">
-                <History
+
+                <Users
                   size={14}
                   className="text-[#a70000]"
                 />
 
                 <span className="text-[8px] uppercase tracking-[0.2em] text-gray-600">
-                  Property Movement Records
+                  Account Administration
                 </span>
+
               </div>
 
               <p className="mt-2 max-w-2xl text-xs leading-5 text-gray-600">
-                Record and monitor properties that
-                were used outside the office and
-                subsequently returned.
+                Manage PIMS user accounts,
+                assigned roles, departments,
+                account status, and access information.
               </p>
+
             </div>
 
             <button
-              onClick={openAddModal}
-              className="group flex items-center justify-center gap-2 rounded-xl bg-[#a70000] px-4 py-3 text-[10px] font-semibold shadow-[0_0_25px_rgba(167,0,0,0.18)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:bg-[#c00000] hover:shadow-[0_0_30px_rgba(220,0,0,0.3)]"
+              onClick={openAddUser}
+              className="group flex items-center justify-center gap-2 rounded-xl bg-[#a70000] px-4 py-3 text-[10px] font-semibold shadow-[0_0_25px_rgba(167,0,0,0.18)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#c00000] hover:shadow-[0_0_30px_rgba(220,0,0,0.3)]"
             >
+
               <Plus
                 size={15}
-                className="transition-all duration-300 group-hover:rotate-90 group-hover:drop-shadow-[0_0_7px_rgba(255,255,255,0.8)]"
+                className="transition-all duration-300 group-hover:rotate-90"
               />
 
-              Record Check-In
+              Add User
+
             </button>
+
           </div>
 
           {/* =================================================
-              STAT CARDS
+              SUMMARY CARDS
           ================================================= */}
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
             <SummaryCard
-              title="Total Returned"
-              value={totalReturned}
-              description="Recorded property movements"
-              icon={History}
+              title="Total Users"
+              value={totalUsers}
+              description="Registered user accounts"
+              icon={Users}
             />
 
             <SummaryCard
-              title="Good Condition"
-              value={goodCondition}
-              description="Returned without issues"
-              icon={CheckCircle2}
+              title="Active Users"
+              value={activeUsers}
+              description="Currently active accounts"
+              icon={UserCheck}
             />
 
             <SummaryCard
-              title="Needs Attention"
-              value={needsAttention}
-              description="Requires inspection or repair"
-              icon={AlertTriangle}
-              danger
+              title="Managers"
+              value={managerUsers}
+              description="Manager-level accounts"
+              icon={ShieldCheck}
             />
 
             <SummaryCard
-              title="Movement Tracking"
-              value="Active"
-              description="Property return monitoring"
-              icon={RotateCcw}
+              title="Staff"
+              value={staffUsers}
+              description="Staff-level accounts"
+              icon={UserCircle}
             />
+
           </div>
 
           {/* =================================================
-              MOVEMENT TABLE
+              USER TABLE
           ================================================= */}
 
-          <div className="mt-6 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 backdrop-blur-2xl transition-all duration-300 hover:border-[#a70000]/20 hover:shadow-[0_10px_40px_rgba(167,0,0,0.07)]">
+          <div className="mt-6 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 backdrop-blur-2xl transition-all duration-300 hover:border-[#a70000]/20">
+
             {/* TABLE HEADER */}
 
             <div className="mb-5 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+
               <div>
+
                 <h3 className="text-sm font-semibold">
-                  Property Movement Records
+                  User Accounts
                 </h3>
 
                 <p className="mt-1 text-[9px] text-gray-600">
-                  History of properties used outside
-                  the office and returned.
+                  Manage registered PIMS users.
                 </p>
+
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row">
+
+                {/* MOBILE SEARCH */}
+
                 <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2 sm:hidden">
+
                   <Search
                     size={14}
                     className="text-gray-700"
@@ -870,7 +1004,7 @@ export default function CheckInPage() {
 
                   <input
                     type="text"
-                    placeholder="Search movement..."
+                    placeholder="Search user..."
                     value={searchTerm}
                     onChange={(e) =>
                       setSearchTerm(
@@ -879,204 +1013,236 @@ export default function CheckInPage() {
                     }
                     className="w-full bg-transparent text-[10px] text-gray-300 outline-none placeholder:text-gray-700"
                   />
+
                 </div>
 
+                {/* ROLE */}
+
                 <select
-                  value={conditionFilter}
+                  value={roleFilter}
                   onChange={(e) =>
-                    setConditionFilter(
+                    setRoleFilter(
                       e.target.value
                     )
                   }
-                  className="rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2 text-[10px] text-gray-400 outline-none transition focus:border-[#a70000]/40"
+                  className="rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2 text-[10px] text-gray-400 outline-none focus:border-[#a70000]/40"
                 >
+
                   <option value="All">
-                    All Conditions
+                    All Roles
                   </option>
 
-                  <option value="Good">
-                    Good
+                  <option value="Manager">
+                    Manager
                   </option>
 
-                  <option value="Minor Damage">
-                    Minor Damage
+                  <option value="Staff">
+                    Staff
                   </option>
 
-                  <option value="Needs Repair">
-                    Needs Repair
+                  <option value="Admin">
+                    Admin
                   </option>
 
-                  <option value="Damaged">
-                    Damaged
-                  </option>
-
-                  <option value="Missing Parts">
-                    Missing Parts
-                  </option>
                 </select>
+
+                {/* STATUS */}
+
+                <select
+                  value={statusFilter}
+                  onChange={(e) =>
+                    setStatusFilter(
+                      e.target.value
+                    )
+                  }
+                  className="rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2 text-[10px] text-gray-400 outline-none focus:border-[#a70000]/40"
+                >
+
+                  <option value="All">
+                    All Status
+                  </option>
+
+                  <option value="Active">
+                    Active
+                  </option>
+
+                  <option value="Inactive">
+                    Inactive
+                  </option>
+
+                </select>
+
               </div>
+
             </div>
 
             {/* TABLE */}
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1050px]">
+
+              <table className="w-full min-w-[1100px]">
+
                 <thead>
+
                   <tr className="border-b border-white/[0.06] text-left">
+
                     <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
-                      Property
+                      User
                     </th>
 
                     <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
-                      Borrower
+                      Username
                     </th>
 
                     <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
-                      Date Out
+                      Contact
                     </th>
 
                     <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
-                      Returned
+                      Role
                     </th>
 
                     <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
-                      Purpose
+                      Department
                     </th>
 
                     <th className="pb-3 text-[8px] uppercase tracking-wider text-gray-700">
-                      Condition
+                      Status
                     </th>
 
                     <th className="pb-3 text-right text-[8px] uppercase tracking-wider text-gray-700">
                       Action
                     </th>
+
                   </tr>
+
                 </thead>
 
                 <tbody>
-                  {filteredMovements.length ===
-                  0 ? (
+
+                  {filteredUsers.length === 0 ? (
+
                     <tr>
+
                       <td
                         colSpan={7}
                         className="py-16 text-center"
                       >
+
                         <div className="mx-auto flex max-w-xs flex-col items-center">
+
                           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.025] text-gray-700">
-                            <History size={20} />
+
+                            <Users size={20} />
+
                           </div>
 
                           <p className="text-xs text-gray-500">
-                            No movement records
-                            found.
+                            No users found.
                           </p>
 
                           <p className="mt-1 text-[9px] text-gray-700">
-                            Try another search or
-                            record a new property
-                            return.
+                            Try changing your search
+                            or filter.
                           </p>
+
                         </div>
+
                       </td>
+
                     </tr>
+
                   ) : (
-                    filteredMovements.map(
-                      (movement) => (
-                        <MovementRow
-                          key={movement.id}
-                          movement={movement}
+
+                    filteredUsers.map(
+                      (item) => (
+
+                        <UserRow
+                          key={item.id}
+                          user={item}
                           onView={
-                            openViewModal
+                            openViewUser
                           }
                           onEdit={
-                            openEditModal
+                            openEditUser
                           }
                           onDelete={
                             handleDelete
                           }
+                          onToggleStatus={
+                            toggleStatus
+                          }
                         />
+
                       )
                     )
+
                   )}
+
                 </tbody>
+
               </table>
+
             </div>
 
             {/* FOOTER */}
 
             <div className="mt-4 flex items-center justify-between border-t border-white/[0.05] pt-4">
+
               <p className="text-[8px] text-gray-700">
+
                 Showing{" "}
+
                 <span className="text-gray-500">
-                  {filteredMovements.length}
+                  {filteredUsers.length}
                 </span>{" "}
+
                 of{" "}
+
                 <span className="text-gray-500">
-                  {movements.length}
+                  {users.length}
                 </span>{" "}
-                records
+
+                users
+
               </p>
 
-              <div className="flex items-center gap-2 text-[8px] text-gray-700">
-                <Clock3 size={11} />
+              <p className="text-[8px] text-gray-700">
+                PIMS User Management
+              </p>
 
-                Movement history
-              </div>
             </div>
+
           </div>
 
-          {/* =================================================
-              INFORMATION CARD
-          ================================================= */}
-
-          <div className="mt-6 rounded-2xl border border-[#a70000]/10 bg-[#a70000]/[0.025] p-5 transition-all duration-300 hover:border-[#a70000]/25 hover:shadow-[0_10px_35px_rgba(167,0,0,0.08)]">
-            <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#a70000]/10 text-[#a70000]">
-                <ArrowDownToLine size={18} />
-              </div>
-
-              <div>
-                <h4 className="text-xs font-semibold text-gray-300">
-                  About Property Check-In
-                </h4>
-
-                <p className="mt-2 max-w-3xl text-[9px] leading-5 text-gray-600">
-                  This module records the movement of
-                  company properties that leave the
-                  office for field activities, events,
-                  production work, meetings, or other
-                  authorized purposes. Once returned,
-                  the property condition and return
-                  details can be recorded for monitoring
-                  and accountability.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
+
       </section>
 
       {/* =================================================
-          RECORD CHECK-IN MODAL
+          ADD / EDIT MODAL
       ================================================= */}
 
       {showModal && (
+
         <ModalOverlay
           onClose={() =>
             setShowModal(false)
           }
         >
-          <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[#111111]/95 shadow-[0_25px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-200">
+
+          <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[#111111]/95 shadow-[0_25px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl">
+
             <ModalHeader
               title={
-                editingMovement
-                  ? "Edit Movement Record"
-                  : "Record Property Check-In"
+                editingUser
+                  ? "Edit User"
+                  : "Add New User"
               }
               description={
-                editingMovement
-                  ? "Update the property movement record."
-                  : "Record the return of a property used outside the office."
+                editingUser
+                  ? "Update user account information."
+                  : "Create a new PIMS user account."
               }
               onClose={() =>
                 setShowModal(false)
@@ -1087,36 +1253,47 @@ export default function CheckInPage() {
               onSubmit={handleSubmit}
               className="max-h-[80vh] space-y-5 overflow-y-auto p-6"
             >
+
+              {/* ERROR */}
+
               {formError && (
+
                 <div className="rounded-xl border border-red-500/10 bg-red-500/[0.05] px-4 py-3">
+
                   <p className="text-[9px] text-red-300">
                     {formError}
                   </p>
+
                 </div>
+
               )}
 
-              {/* PROPERTY */}
+              {/* PERSONAL INFORMATION */}
 
               <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+
                 <div className="mb-4 flex items-center gap-2">
-                  <Package
+
+                  <UserCircle
                     size={14}
                     className="text-[#a70000]"
                   />
 
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-500">
-                    Property Information
+                    Personal Information
                   </p>
+
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
+
                   <FormInput
-                    label="Property Code"
-                    placeholder="e.g. PIMS-00005"
-                    value={form.propertyId}
+                    label="First Name"
+                    placeholder="First name"
+                    value={form.firstName}
                     onChange={(e) =>
                       updateForm(
-                        "propertyId",
+                        "firstName",
                         e.target.value
                       )
                     }
@@ -1124,12 +1301,12 @@ export default function CheckInPage() {
                   />
 
                   <FormInput
-                    label="Property Name"
-                    placeholder="e.g. Sony PXW-Z150 Camera"
-                    value={form.propertyName}
+                    label="Last Name"
+                    placeholder="Last name"
+                    value={form.lastName}
                     onChange={(e) =>
                       updateForm(
-                        "propertyName",
+                        "lastName",
                         e.target.value
                       )
                     }
@@ -1137,294 +1314,309 @@ export default function CheckInPage() {
                   />
 
                   <FormInput
-                    label="Category"
-                    placeholder="e.g. Camera"
-                    value={form.category}
+                    label="Email Address"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={form.email}
                     onChange={(e) =>
                       updateForm(
-                        "category",
-                        e.target.value
-                      )
-                    }
-                  />
-
-                  <FormInput
-                    label="Borrower / Employee"
-                    placeholder="Employee name"
-                    value={form.employee}
-                    onChange={(e) =>
-                      updateForm(
-                        "employee",
+                        "email",
                         e.target.value
                       )
                     }
                     required
                   />
+
+                  <FormInput
+                    label="Phone Number"
+                    placeholder="09XXXXXXXXX"
+                    value={form.phone}
+                    onChange={(e) =>
+                      updateForm(
+                        "phone",
+                        e.target.value
+                      )
+                    }
+                  />
+
                 </div>
+
               </div>
 
-              {/* MOVEMENT */}
+              {/* ACCOUNT */}
 
               <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+
                 <div className="mb-4 flex items-center gap-2">
-                  <History
+
+                  <ShieldCheck
                     size={14}
                     className="text-[#a70000]"
                   />
 
                   <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-500">
-                    Movement Details
+                    Account Information
                   </p>
+
                 </div>
 
-                <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+
                   <FormInput
-                    label="Purpose / Activity"
-                    placeholder="e.g. Field production, event, meeting"
-                    value={form.purpose}
+                    label="Username"
+                    placeholder="username"
+                    value={form.username}
                     onChange={(e) =>
                       updateForm(
-                        "purpose",
+                        "username",
+                        e.target.value
+                      )
+                    }
+                    required
+                  />
+
+                  <FormInput
+                    label="Password"
+                    type="password"
+                    placeholder="Enter password"
+                    value={form.password}
+                    onChange={(e) =>
+                      updateForm(
+                        "password",
                         e.target.value
                       )
                     }
                   />
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <FormInput
-                      label="Date Out"
-                      type="date"
-                      value={form.dateOut}
-                      onChange={(e) =>
-                        updateForm(
-                          "dateOut",
-                          e.target.value
-                        )
-                      }
-                      required
-                    />
-
-                    <FormInput
-                      label="Time Out"
-                      type="time"
-                      value={form.timeOut}
-                      onChange={(e) =>
-                        updateForm(
-                          "timeOut",
-                          e.target.value
-                        )
-                      }
-                      required
-                    />
-
-                    <FormInput
-                      label="Date Returned"
-                      type="date"
-                      value={form.dateReturned}
-                      onChange={(e) =>
-                        updateForm(
-                          "dateReturned",
-                          e.target.value
-                        )
-                      }
-                      required
-                    />
-
-                    <FormInput
-                      label="Time Returned"
-                      type="time"
-                      value={form.timeReturned}
-                      onChange={(e) =>
-                        updateForm(
-                          "timeReturned",
-                          e.target.value
-                        )
-                      }
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* CONDITION */}
-
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-                <div className="mb-4 flex items-center gap-2">
-                  <CheckCircle2
-                    size={14}
-                    className="text-[#a70000]"
-                  />
-
-                  <p className="text-[9px] font-semibold uppercase tracking-wider text-gray-500">
-                    Return Condition
-                  </p>
-                </div>
-
-                <div className="space-y-4">
                   <FormSelect
-                    label="Condition Upon Return"
-                    value={form.condition}
+                    label="Role"
+                    value={form.role}
                     onChange={(e) =>
                       updateForm(
-                        "condition",
+                        "role",
                         e.target.value
                       )
                     }
                     options={[
-                      "Good",
-                      "Minor Damage",
-                      "Needs Repair",
-                      "Damaged",
-                      "Missing Parts",
+                      "Staff",
+                      "Manager",
+                      "Admin",
                     ]}
                   />
 
-                  <FormTextarea
-                    label="Remarks"
-                    placeholder="Enter details about the returned property."
-                    value={form.remarks}
+                  <FormSelect
+                    label="Account Status"
+                    value={form.status}
                     onChange={(e) =>
                       updateForm(
-                        "remarks",
+                        "status",
                         e.target.value
                       )
                     }
+                    options={[
+                      "Active",
+                      "Inactive",
+                    ]}
                   />
+
+                  <div className="sm:col-span-2">
+
+                    <FormInput
+                      label="Department"
+                      placeholder="e.g. Property Management"
+                      value={form.department}
+                      onChange={(e) =>
+                        updateForm(
+                          "department",
+                          e.target.value
+                        )
+                      }
+                    />
+
+                  </div>
+
                 </div>
+
               </div>
 
               {/* BUTTONS */}
 
-              <ModalButtons
-                onCancel={() =>
-                  setShowModal(false)
-                }
-                submitText={
-                  editingMovement
+              <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-5">
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowModal(false)
+                  }
+                  className="rounded-xl border border-white/10 px-4 py-3 text-[10px] text-gray-500 transition-all duration-300 hover:border-[#a70000]/20 hover:bg-white/5 hover:text-white"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="flex items-center gap-2 rounded-xl bg-[#a70000] px-5 py-3 text-[10px] font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#c00000] hover:shadow-[0_0_22px_rgba(220,0,0,0.28)]"
+                >
+
+                  <Save size={14} />
+
+                  {editingUser
                     ? "Save Changes"
-                    : "Record Check-In"
-                }
-                submitIcon={
-                  editingMovement ? (
-                    <Save size={14} />
-                  ) : (
-                    <ArrowDownToLine
-                      size={14}
-                    />
-                  )
-                }
-              />
+                    : "Create User"}
+
+                </button>
+
+              </div>
+
             </form>
+
           </div>
+
         </ModalOverlay>
+
       )}
 
       {/* =================================================
-          VIEW MODAL
+          VIEW USER MODAL
       ================================================= */}
 
       {showViewModal &&
-        selectedMovement && (
+        selectedUser && (
+
           <ModalOverlay
             onClose={() =>
               setShowViewModal(false)
             }
           >
-            <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#111111]/95 shadow-[0_25px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-200">
+
+            <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#111111]/95 shadow-[0_25px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl">
+
               <ModalHeader
-                title="Movement Details"
-                description={`Movement record ${selectedMovement.id}`}
+                title="User Details"
+                description={`Account ${selectedUser.id}`}
                 onClose={() =>
                   setShowViewModal(false)
                 }
               />
 
               <div className="space-y-5 p-6">
-                {/* PROPERTY HEADER */}
+
+                {/* USER HEADER */}
 
                 <div className="flex items-center gap-4 rounded-xl border border-[#a70000]/10 bg-[#a70000]/[0.035] p-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#a70000]/10 text-[#a70000]">
-                    <Package size={21} />
+
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#a70000]/10 text-[#a70000]">
+
+                    <UserCircle
+                      size={30}
+                    />
+
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-[8px] uppercase tracking-wider text-gray-700">
-                      Property
-                    </p>
 
-                    <h3 className="mt-1 truncate text-sm font-semibold text-gray-200">
-                      {
-                        selectedMovement.propertyName
-                      }
+                    <h3 className="text-sm font-semibold text-gray-200">
+
+                      {selectedUser.firstName}{" "}
+                      {selectedUser.lastName}
+
                     </h3>
 
                     <p className="mt-1 text-[9px] text-gray-600">
-                      {
-                        selectedMovement.propertyId
-                      }{" "}
-                      •{" "}
-                      {
-                        selectedMovement.category ||
-                        "Uncategorized"
-                      }
+                      @{selectedUser.username}
                     </p>
+
+                    <div className="mt-2">
+
+                      <StatusBadge
+                        status={
+                          selectedUser.status
+                        }
+                      />
+
+                    </div>
+
                   </div>
+
                 </div>
 
                 {/* DETAILS */}
 
                 <div className="grid gap-3 sm:grid-cols-2">
+
                   <DetailItem
-                    label="Borrower / Employee"
+                    label="User ID"
                     value={
-                      selectedMovement.employee
+                      selectedUser.id
                     }
                   />
 
                   <DetailItem
-                    label="Purpose"
+                    label="Role"
                     value={
-                      selectedMovement.purpose ||
+                      selectedUser.role
+                    }
+                  />
+
+                  <DetailItem
+                    label="Department"
+                    value={
+                      selectedUser.department ||
                       "Not specified"
                     }
                   />
 
                   <DetailItem
-                    label="Date Out"
-                    value={`${selectedMovement.dateOut} ${selectedMovement.timeOut}`}
-                  />
-
-                  <DetailItem
-                    label="Date Returned"
-                    value={`${selectedMovement.dateReturned} ${selectedMovement.timeReturned}`}
-                  />
-
-                  <DetailItem
-                    label="Condition"
+                    label="Email"
                     value={
-                      selectedMovement.condition
+                      selectedUser.email
                     }
                   />
 
                   <DetailItem
-                    label="Status"
+                    label="Phone"
                     value={
-                      selectedMovement.status
+                      selectedUser.phone ||
+                      "Not specified"
                     }
                   />
+
+                  <DetailItem
+                    label="Date Created"
+                    value={
+                      selectedUser.dateCreated
+                    }
+                  />
+
                 </div>
 
-                {/* REMARKS */}
+                {/* SECURITY */}
 
-                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-                  <p className="text-[8px] uppercase tracking-wider text-gray-700">
-                    Remarks
-                  </p>
+                <div className="rounded-xl border border-[#a70000]/10 bg-[#a70000]/[0.025] p-4">
 
-                  <p className="mt-2 text-[10px] leading-5 text-gray-400">
-                    {selectedMovement.remarks ||
-                      "No remarks provided."}
-                  </p>
+                  <div className="flex gap-3">
+
+                    <ShieldCheck
+                      size={16}
+                      className="mt-0.5 text-[#a70000]"
+                    />
+
+                    <div>
+
+                      <p className="text-[9px] font-semibold text-gray-400">
+                        Account Access
+                      </p>
+
+                      <p className="mt-1 text-[8px] leading-4 text-gray-700">
+                        Role-based access should
+                        determine which PIMS modules
+                        this user can access.
+                      </p>
+
+                    </div>
+
+                  </div>
+
                 </div>
 
                 <button
@@ -1436,114 +1628,187 @@ export default function CheckInPage() {
                 >
                   Close
                 </button>
+
               </div>
+
             </div>
+
           </ModalOverlay>
+
         )}
+
     </main>
   );
 }
 
 // =====================================================
-// MOVEMENT ROW
+// USER ROW
 // =====================================================
 
-function MovementRow({
-  movement,
+function UserRow({
+  user,
   onView,
   onEdit,
   onDelete,
+  onToggleStatus,
 }) {
-  const isAttention =
-    movement.condition !== "Good";
+  const fullName =
+    `${user.firstName} ${user.lastName}`;
 
   return (
     <tr className="group border-b border-white/[0.04] transition-all duration-300 hover:bg-[#a70000]/[0.035]">
+
+      {/* USER */}
+
       <td className="py-4">
+
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#a70000]/10 bg-[#a70000]/[0.06] text-gray-600 transition-all duration-300 group-hover:scale-110 group-hover:border-[#a70000]/30 group-hover:bg-[#a70000]/15 group-hover:text-[#ff1f1f] group-hover:shadow-[0_0_15px_rgba(255,0,0,0.16)]">
-            <Package size={15} />
+
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#a70000]/10 bg-[#a70000]/[0.06] text-[#a70000] transition-all duration-300 group-hover:scale-110 group-hover:border-[#a70000]/30 group-hover:bg-[#a70000]/15">
+
+            <UserCircle size={18} />
+
           </div>
 
           <div>
-            <p className="text-[10px] font-medium text-gray-300 transition-colors duration-300 group-hover:text-white">
-              {movement.propertyName}
+
+            <p className="text-[10px] font-medium text-gray-300 group-hover:text-white">
+              {fullName}
             </p>
 
             <p className="mt-1 text-[8px] text-gray-700">
-              {movement.propertyId}
+              {user.id}
             </p>
+
           </div>
+
         </div>
+
       </td>
 
-      <td className="py-4 text-[10px] text-gray-500">
-        {movement.employee}
-      </td>
+      {/* USERNAME */}
 
       <td className="py-4">
-        <div className="text-[9px] text-gray-500">
-          {movement.dateOut}
-        </div>
 
-        <div className="mt-1 text-[8px] text-gray-700">
-          {movement.timeOut}
-        </div>
-      </td>
-
-      <td className="py-4">
-        <div className="text-[9px] text-gray-500">
-          {movement.dateReturned}
-        </div>
-
-        <div className="mt-1 text-[8px] text-gray-700">
-          {movement.timeReturned}
-        </div>
-      </td>
-
-      <td className="py-4 max-w-[180px]">
-        <p className="truncate text-[9px] text-gray-500">
-          {movement.purpose ||
-            "Not specified"}
-        </p>
-      </td>
-
-      <td className="py-4">
-        <span
-          className={`inline-flex rounded-full px-2 py-1 text-[8px] ${
-            isAttention
-              ? "border border-orange-500/10 bg-orange-500/10 text-orange-300"
-              : "border border-green-500/10 bg-green-500/10 text-green-400"
-          }`}
-        >
-          {movement.condition}
+        <span className="text-[9px] text-gray-500">
+          @{user.username}
         </span>
+
       </td>
 
+      {/* CONTACT */}
+
       <td className="py-4">
+
+        <div className="space-y-1">
+
+          <div className="flex items-center gap-1.5">
+
+            <Mail
+              size={10}
+              className="text-gray-700"
+            />
+
+            <span className="text-[8px] text-gray-500">
+              {user.email}
+            </span>
+
+          </div>
+
+          {user.phone && (
+            <div className="flex items-center gap-1.5">
+
+              <Phone
+                size={10}
+                className="text-gray-700"
+              />
+
+              <span className="text-[8px] text-gray-600">
+                {user.phone}
+              </span>
+
+            </div>
+          )}
+
+        </div>
+
+      </td>
+
+      {/* ROLE */}
+
+      <td className="py-4">
+
+        <RoleBadge
+          role={user.role}
+        />
+
+      </td>
+
+      {/* DEPARTMENT */}
+
+      <td className="py-4">
+
+        <span className="text-[9px] text-gray-500">
+          {user.department ||
+            "Not specified"}
+        </span>
+
+      </td>
+
+      {/* STATUS */}
+
+      <td className="py-4">
+
+        <StatusBadge
+          status={user.status}
+        />
+
+      </td>
+
+      {/* ACTION */}
+
+      <td className="py-4">
+
         <div className="flex justify-end gap-1">
+
           <IconButton
             icon={Eye}
-            title="View"
+            title="View User"
             onClick={() =>
-              onView(movement)
+              onView(user)
             }
           />
 
           <IconButton
             icon={Edit3}
-            title="Edit"
+            title="Edit User"
             onClick={() =>
-              onEdit(movement)
+              onEdit(user)
+            }
+          />
+
+          <IconButton
+            icon={
+              user.status === "Active"
+                ? UserX
+                : UserCheck
+            }
+            title={
+              user.status === "Active"
+                ? "Deactivate"
+                : "Activate"
+            }
+            onClick={() =>
+              onToggleStatus(user)
             }
           />
 
           <IconButton
             icon={Trash2}
-            title="Delete"
+            title="Delete User"
             danger
             onClick={() =>
-              onDelete(movement.id)
+              onDelete(user.id)
             }
           />
 
@@ -1551,8 +1816,11 @@ function MovementRow({
             size={13}
             className="ml-1 text-gray-800 transition-all duration-300 group-hover:translate-x-1 group-hover:text-[#a70000]"
           />
+
         </div>
+
       </td>
+
     </tr>
   );
 }
@@ -1566,14 +1834,16 @@ function SummaryCard({
   value,
   description,
   icon: Icon,
-  danger = false,
 }) {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-[#a70000]/30 hover:bg-[#a70000]/[0.04] hover:shadow-[0_10px_35px_rgba(167,0,0,0.16)]">
+
       <div className="absolute left-0 top-0 h-full w-0.5 bg-[#a70000] opacity-30 transition-all duration-300 group-hover:opacity-100 group-hover:shadow-[0_0_12px_#a70000]" />
 
       <div className="flex items-start justify-between">
+
         <div>
+
           <p className="text-[9px] uppercase tracking-wider text-gray-600">
             {title}
           </p>
@@ -1581,26 +1851,71 @@ function SummaryCard({
           <p className="mt-2 text-2xl font-bold">
             {value}
           </p>
+
         </div>
 
-        <div
-          className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 group-hover:scale-110 group-hover:border-[#ff1f1f]/40 group-hover:bg-[#a70000]/20 group-hover:text-[#ff2424] group-hover:shadow-[0_0_18px_rgba(255,0,0,0.28)] ${
-            danger
-              ? "border-orange-500/15 bg-orange-500/10 text-orange-400"
-              : "border-[#a70000]/15 bg-[#a70000]/10 text-[#a70000]"
-          }`}
-        >
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#a70000]/15 bg-[#a70000]/10 text-[#a70000] transition-all duration-300 group-hover:scale-110 group-hover:border-[#ff1f1f]/40 group-hover:bg-[#a70000]/20 group-hover:text-[#ff2424] group-hover:shadow-[0_0_18px_rgba(255,0,0,0.28)]">
+
           <Icon
             size={19}
             className="transition-all duration-300 group-hover:drop-shadow-[0_0_7px_rgba(255,0,0,0.85)]"
           />
+
         </div>
+
       </div>
 
       <p className="mt-4 text-[9px] text-gray-600">
         {description}
       </p>
+
     </div>
+  );
+}
+
+// =====================================================
+// ROLE BADGE
+// =====================================================
+
+function RoleBadge({ role }) {
+  const styles = {
+    Admin:
+      "border-red-500/10 bg-red-500/10 text-red-300",
+
+    Manager:
+      "border-purple-500/10 bg-purple-500/10 text-purple-300",
+
+    Staff:
+      "border-blue-500/10 bg-blue-500/10 text-blue-300",
+  };
+
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2 py-1 text-[8px] ${
+        styles[role] ||
+        "border-white/10 bg-white/5 text-gray-400"
+      }`}
+    >
+      {role}
+    </span>
+  );
+}
+
+// =====================================================
+// STATUS BADGE
+// =====================================================
+
+function StatusBadge({ status }) {
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2 py-1 text-[8px] ${
+        status === "Active"
+          ? "border-green-500/10 bg-green-500/10 text-green-400"
+          : "border-gray-500/10 bg-gray-500/10 text-gray-500"
+      }`}
+    >
+      {status}
+    </span>
   );
 }
 
@@ -1621,14 +1936,13 @@ function IconButton({
       onClick={onClick}
       className={`rounded-lg border p-2 transition-all duration-300 ${
         danger
-          ? "border-[#a70000]/10 text-gray-700 hover:border-red-500/20 hover:bg-[#a70000]/10 hover:text-red-400 hover:shadow-[0_0_12px_rgba(255,0,0,0.12)]"
-          : "border-white/[0.05] text-gray-700 hover:border-[#a70000]/20 hover:bg-[#a70000]/10 hover:text-[#ff2222] hover:shadow-[0_0_12px_rgba(255,0,0,0.1)]"
+          ? "border-[#a70000]/10 text-gray-700 hover:border-red-500/20 hover:bg-[#a70000]/10 hover:text-red-400"
+          : "border-white/[0.05] text-gray-700 hover:border-[#a70000]/20 hover:bg-[#a70000]/10 hover:text-[#ff2222]"
       }`}
     >
-      <Icon
-        size={13}
-        className="transition-all duration-300 hover:drop-shadow-[0_0_6px_rgba(255,0,0,0.9)]"
-      />
+
+      <Icon size={13} />
+
     </button>
   );
 }
@@ -1643,13 +1957,15 @@ function DetailItem({
 }) {
   return (
     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+
       <p className="text-[8px] uppercase tracking-wider text-gray-700">
         {label}
       </p>
 
-      <p className="mt-2 text-[10px] text-gray-400">
+      <p className="mt-2 break-words text-[10px] text-gray-400">
         {value}
       </p>
+
     </div>
   );
 }
@@ -1689,7 +2005,9 @@ function ModalHeader({
 }) {
   return (
     <div className="flex items-start justify-between border-b border-white/[0.06] p-6">
+
       <div>
+
         <h2 className="text-sm font-semibold">
           {title}
         </h2>
@@ -1697,15 +2015,19 @@ function ModalHeader({
         <p className="mt-1 text-[9px] text-gray-600">
           {description}
         </p>
+
       </div>
 
       <button
         type="button"
         onClick={onClose}
-        className="rounded-lg p-1 text-gray-600 transition-all duration-300 hover:bg-[#a70000]/10 hover:text-[#ff2222] hover:shadow-[0_0_12px_rgba(255,0,0,0.15)]"
+        className="rounded-lg p-1 text-gray-600 transition-all duration-300 hover:bg-[#a70000]/10 hover:text-[#ff2222]"
       >
+
         <X size={18} />
+
       </button>
+
     </div>
   );
 }
@@ -1724,9 +2046,13 @@ function FormInput({
 }) {
   return (
     <div>
+
       <label className="mb-2 block text-[9px] uppercase tracking-wider text-gray-500">
+
         {label}
+
         {required && " *"}
+
       </label>
 
       <input
@@ -1737,6 +2063,7 @@ function FormInput({
         required={required}
         className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white outline-none placeholder:text-gray-700 transition-all duration-300 focus:border-[#a70000]/50 focus:ring-1 focus:ring-[#a70000]/20"
       />
+
     </div>
   );
 }
@@ -1753,6 +2080,7 @@ function FormSelect({
 }) {
   return (
     <div>
+
       <label className="mb-2 block text-[9px] uppercase tracking-wider text-gray-500">
         {label}
       </label>
@@ -1762,6 +2090,7 @@ function FormSelect({
         onChange={onChange}
         className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-gray-300 outline-none transition-all duration-300 focus:border-[#a70000]/50 focus:ring-1 focus:ring-[#a70000]/20"
       >
+
         {options.map((option) => (
           <option
             key={option}
@@ -1770,65 +2099,9 @@ function FormSelect({
             {option}
           </option>
         ))}
+
       </select>
-    </div>
-  );
-}
 
-// =====================================================
-// FORM TEXTAREA
-// =====================================================
-
-function FormTextarea({
-  label,
-  value,
-  onChange,
-  placeholder,
-}) {
-  return (
-    <div>
-      <label className="mb-2 block text-[9px] uppercase tracking-wider text-gray-500">
-        {label}
-      </label>
-
-      <textarea
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        rows={3}
-        className="w-full resize-none rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-xs text-white outline-none placeholder:text-gray-700 transition-all duration-300 focus:border-[#a70000]/50 focus:ring-1 focus:ring-[#a70000]/20"
-      />
-    </div>
-  );
-}
-
-// =====================================================
-// MODAL BUTTONS
-// =====================================================
-
-function ModalButtons({
-  onCancel,
-  submitText,
-  submitIcon,
-}) {
-  return (
-    <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-5">
-      <button
-        type="button"
-        onClick={onCancel}
-        className="rounded-xl border border-white/10 px-4 py-3 text-[10px] text-gray-500 transition-all duration-300 hover:border-[#a70000]/20 hover:bg-white/5 hover:text-white"
-      >
-        Cancel
-      </button>
-
-      <button
-        type="submit"
-        className="flex items-center gap-2 rounded-xl bg-[#a70000] px-5 py-3 text-[10px] font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#c00000] hover:shadow-[0_0_22px_rgba(220,0,0,0.28)]"
-      >
-        {submitIcon}
-
-        {submitText}
-      </button>
     </div>
   );
 }
@@ -1843,9 +2116,11 @@ function NotificationItem({
 }) {
   return (
     <div className="flex gap-3 rounded-xl p-3 transition hover:bg-white/[0.025]">
+
       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#a70000] shadow-[0_0_7px_#a70000]" />
 
       <div>
+
         <p className="text-[9px] font-medium text-gray-300">
           {title}
         </p>
@@ -1853,7 +2128,9 @@ function NotificationItem({
         <p className="mt-1 text-[8px] leading-4 text-gray-600">
           {description}
         </p>
+
       </div>
+
     </div>
   );
 }

@@ -39,7 +39,7 @@ export default function LoginPage() {
       "pimsAuthenticated",
       "true"
     );
-  
+    
     sessionStorage.setItem(
       "pimsUser",
       JSON.stringify({
@@ -48,9 +48,10 @@ export default function LoginPage() {
         role: "Super Admin",
       })
     );
+    
   
     // Redirect to dashboard
-    router.push("/dashboard");
+    router.replace("/dashboard");
   }
 
 

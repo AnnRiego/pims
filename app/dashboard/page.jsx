@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Sidebar from "../components/Sidebar";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -456,7 +457,7 @@ export default function DashboardPage() {
       return;
     }
 
-    const property = properties.find(
+    const property = property.find(
       (item) =>
         item.id === checkinForm.propertyId
     );
@@ -549,14 +550,9 @@ export default function DashboardPage() {
       icon: LayoutDashboard,
     },
     {
-      name: "Property",
+      name: "Equipment",
       route: "/property",
       icon: Package,
-    },
-    {
-      name: "Check-In",
-      route: "/check-in",
-      icon: ArrowDownToLine,
     },
     {
       name: "Check-Out",
@@ -564,14 +560,19 @@ export default function DashboardPage() {
       icon: ArrowUpFromLine,
     },
     {
-      name: "Manage Users",
-      route: "/users",
-      icon: Users,
+      name: "Check-In",
+      route: "/check-in",
+      icon: ArrowDownToLine,
+    },
+    {
+      name: "Assignments",
+      route: "/assignments",
+      icon: FileText,
     },
     {
       name: "Reports",
       route: "/reports",
-      icon: FileText,
+      icon: FileBarChart,
     },
     {
       name: "Settings",
@@ -688,13 +689,7 @@ export default function DashboardPage() {
           SIDEBAR
       ===================================================== */}
 
-      <aside
-        className={`fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-white/[0.07] bg-[#090909]/85 backdrop-blur-2xl transition-transform duration-300 ${
-          sidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full lg:translate-x-0"
-        }`}
-      >
+
         {/* LOGO */}
 
         <div className="flex h-20 items-center justify-between border-b border-white/[0.06] px-5">
@@ -724,6 +719,11 @@ export default function DashboardPage() {
             <X size={20} />
           </button>
         </div>
+
+            <Sidebar
+               sidebarOpen={sidebarOpen}
+               setSidebarOpen={setSidebarOpen}
+            />
 
         {/* MENU */}
 
@@ -805,16 +805,21 @@ export default function DashboardPage() {
             </span>
           </button>
         </div>
-      </aside>
+
 
       {/* =====================================================
           MAIN CONTENT
       ===================================================== */}
 
-      <section className="relative z-10 min-h-screen lg:ml-64">
-        {/* TOP BAR */}
+      <section className="relative z-10 min-h-screen lg:ml-70">
+       
+       {/* =====================================================
+            TOP BAR
+        ===================================================== */}
 
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/[0.06] bg-[#090909]/65 px-5 backdrop-blur-2xl sm:px-7">
+        <header className="fixed left-0 right-0 top-0 z-30 flex h-18 items-center justify-between border-b
+         border-white/[0.06] bg-[#090909]/80 px-5 backdrop-blur-2xl sm:px-7 lg:left-64">
+
           <div className="flex items-center gap-4">
             <button
               type="button"
@@ -893,47 +898,50 @@ export default function DashboardPage() {
             DASHBOARD BODY
         ===================================================== */}
 
-        <div className="p-5 sm:p-7">
+    <div className="p-5 sm:p-5">
+
           {/* WELCOME */}
+      <div className="mt-5 mb-7">
 
-          <div className="mb-7 flex flex-col justify-between gap-5 md:flex-row md:items-end">
-  <div>
-    <div className="mb-2 flex items-center gap-2">
-      <ShieldCheck
-        size={14}
-        className="text-[#a70000]"
-      />
+        <div className="mb-2 flex items-center gap-2">
 
-      <span className="text-[8px] uppercase tracking-[0.2em] text-gray-600">
-        Super Admin Portal
-      </span>
+            <ShieldCheck
+            size={14}
+            className="text-[#a70000]"/>
+
+           <span className="text-[8px] uppercase tracking-[0.2em] text-gray-600">
+            Super Admin Portal
+           </span>
+
+        </div>
+
+        <h1 className="text-2xl font-bold">
+         Welcome back,{" "}
+         <span className="text-[#a70000]">
+        {user.name}
+          </span>
+        </h1>
+
+           <p className="mt-2 text-xs text-gray-600">
+           Here's an overview of your property inventory.
+          </p>
+      </div>
     </div>
 
-    <h1 className="text-2xl font-bold">
-      Welcome back,{" "}
-      <span className="text-[#a70000]">
-        {user.name}
-      </span>
-    </h1>
-
-    <p className="mt-2 text-xs text-gray-600">
-      Here's an overview of your property inventory.
-    </p>
-  </div>
-
   {/* SEARCH BAR */}
-  <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.025] px-4 py-3 backdrop-blur-xl transition-all duration-300 focus-within:border-[#a70000]/40 focus-within:bg-[#a70000]/[0.04] focus-within:shadow-[0_0_25px_rgba(167,0,0,0.12)]">
-    <Search
-      size={15}
-      className="text-gray-600 transition-colors duration-300"
-    />
+  <div className="mr-auto mb-4 flex w-1/4 items-center gap-2 rounded-xl border border-white/[0.07]
+   bg-white/[0.025] px-4 py-3 backdrop-blur-xl transition-all duration-300 focus-within:border-[#a70000]/40 focus-within:bg-[#a70000]/[0.04] 
+   focus-within:shadow-[0_0_25px_rgba(167,0,0,0.12)]">
+  <Search
+    size={15}
+    className="shrink-0 text-gray-600 transition-colors duration-300"
+  />
 
-    <input
-      type="text"
-      placeholder="Search properties..."
-      className="w-48 bg-transparent text-[10px] text-gray-300 outline-none placeholder:text-gray-700"
-    />
-  </div>
+  <input
+    type="text"
+    placeholder="Search properties..."
+    className="w-full min-w-0 bg-transparent text-[10px] text-gray-300 outline-none placeholder:text-gray-700"
+  />
 </div>
 
           {/* STATISTICS */}
@@ -1094,7 +1102,7 @@ export default function DashboardPage() {
                   onClick={openUsersModal}
                 />
 
-                <QuickAction
+                <QuickAction  
                   icon={FileText}
                   title="Generate Report"
                   description="Generate inventory reports"
@@ -1190,7 +1198,6 @@ export default function DashboardPage() {
               />
             </div>
           </div>
-        </div>
       </section>
 
       {/* =====================================================
@@ -1898,7 +1905,7 @@ function ModalOverlay({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -1909,6 +1916,16 @@ function ModalOverlay({
     </div>
   );
 }
+
+<ModalOverlay
+  onClose={() => setShowUserModal(false)}
+>
+  <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[#111111] shadow-[0_25px_80px_rgba(0,0,0,0.8)]">
+
+    {/* YOUR EXISTING USER FORM */}
+
+  </div>
+</ModalOverlay>
 
 // =====================================================
 // MODAL HEADER

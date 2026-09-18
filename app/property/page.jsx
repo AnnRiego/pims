@@ -594,7 +594,6 @@ export default function PropertiesPage() {
         {/* =====================================================
             TOP BAR
         ===================================================== */}
-
         <header className="fixed left-0 right-0 top-0 z-30 flex h-18 items-center justify-between border-b
          border-white/[0.06] bg-[#090909]/80 px-5 backdrop-blur-2xl sm:px-7 lg:left-64">
           

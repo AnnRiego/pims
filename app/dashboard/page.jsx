@@ -725,87 +725,6 @@ export default function DashboardPage() {
                setSidebarOpen={setSidebarOpen}
             />
 
-        {/* MENU */}
-
-        <nav className="flex-1 overflow-y-auto p-4">
-          <p className="mb-3 px-3 text-[8px] uppercase tracking-[0.2em] text-gray-700">
-            Main Menu
-          </p>
-
-          <div className="space-y-1">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-
-              const isActive =
-                pathname === item.route;
-
-              return (
-                <button
-                  key={item.route}
-                  type="button"
-                  onClick={() =>
-                    navigateTo(item.route)
-                  }
-                  className={`group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
-                    isActive
-                      ? "border border-[#a70000]/20 bg-[#a70000]/10 text-white"
-                      : "border border-transparent text-gray-600 hover:border-white/[0.05] hover:bg-white/[0.025] hover:text-gray-300"
-                  }`}
-                >
-                  <Icon
-                    size={17}
-                    className={
-                      isActive
-                        ? "text-[#a70000]"
-                        : "text-gray-700 group-hover:text-[#a70000]"
-                    }
-                  />
-
-                  <span className="text-[10px] font-medium">
-                    {item.name}
-                  </span>
-
-                  {isActive && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#a70000] shadow-[0_0_8px_#a70000]" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </nav>
-
-        {/* USER */}
-
-        <div className="border-t border-white/[0.06] p-4">
-          <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.025] p-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#a70000]/10 text-[#a70000]">
-              <UserCircle size={20} />
-            </div>
-
-            <div className="min-w-0">
-              <p className="truncate text-[10px] font-semibold text-gray-300">
-                {user.name}
-              </p>
-
-              <p className="truncate text-[8px] text-gray-600">
-                {user.role}
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-gray-600 transition hover:bg-[#a70000]/10 hover:text-red-300"
-          >
-            <LogOut size={16} />
-
-            <span className="text-[10px]">
-              Logout
-            </span>
-          </button>
-        </div>
-
 
       {/* =====================================================
           MAIN CONTENT
@@ -897,10 +816,9 @@ export default function DashboardPage() {
         {/* =====================================================
             DASHBOARD BODY
         ===================================================== */}
-    <div className="p-5 sm:p-5">
+    <div className="p-2 sm:p-2">
 
           {/* WELCOME */}
-      <div className="mt-5 mb-7">
 
         <div className="mb-2 flex items-center gap-2">
 
@@ -921,28 +839,14 @@ export default function DashboardPage() {
           </span>
         </h1>
 
+        
+
            <p className="mt-2 text-xs text-gray-600">
            Here's an overview of your property inventory.
           </p>
       </div>
-    </div>
 
-  {/* SEARCH BAR */}
-  <div className="mr-auto mb-4 flex w-1/4 items-center gap-2 rounded-xl border border-white/[0.07]
-   bg-white/[0.025] px-4 py-3 backdrop-blur-xl transition-all duration-300 focus-within:border-[#a70000]/40 focus-within:bg-[#a70000]/[0.04] 
-   focus-within:shadow-[0_0_25px_rgba(167,0,0,0.12)]">
-  <Search
-    size={15}
-    className="shrink-0 text-gray-600 transition-colors duration-300"
-  />
-
-  <input
-    type="text"
-    placeholder="Search properties..."
-    className="w-full min-w-0 bg-transparent text-[10px] text-gray-300 outline-none placeholder:text-gray-700"
-  />
-</div>
-
+        
           {/* STATISTICS */}
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -2169,12 +2073,8 @@ function QuickAction({
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 text-left transition hover:border-[#a70000]/20 hover:bg-[#a70000]/[0.04]"
-    >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#a70000]/15 bg-[#a70000]/10 text-[#a70000] transition group-hover:bg-[#a70000] group-hover:text-white">
-        <Icon size={15} />
-      </div>
-
+      >
+      
       <div className="min-w-0">
         <p className="text-[10px] font-medium text-gray-300">
           {title}
@@ -2185,9 +2085,7 @@ function QuickAction({
         </p>
       </div>
 
-      <span className="ml-auto text-gray-700 transition group-hover:text-[#a70000]">
-        →
-      </span>
+     
     </button>
   );
 }

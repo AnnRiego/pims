@@ -665,7 +665,7 @@ export default function PropertiesPage() {
             PROPERTY BODY
         ===================================================== */}
 
-        <div className="p-5 sm:p-7">
+        <div className="p-5 sm:p-7"> 
 
           {/* PAGE TITLE */}
 

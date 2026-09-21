@@ -116,7 +116,7 @@ export default function PropertiesPage() {
       acquisitionDate: "2026-02-10",
       acquisitionCost: "180000",
       supplier: "Apple",
-      location: "COSDD",
+      location: "Warehouse",
       status: "Issued",
       createdAt: new Date().toISOString(),
     },
@@ -1265,7 +1265,7 @@ export default function PropertiesPage() {
 
                 <FormInput
                   label="Current Location"
-                  placeholder="e.g. COSDD / Main Office"
+                  placeholder="e.g. Main Office"
                   value={form.location}
                   onChange={(e) =>
                     setForm({
